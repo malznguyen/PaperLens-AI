@@ -1,5 +1,6 @@
 import { CalendarDays, ExternalLink, FileText } from "lucide-react";
 
+import { IndexButton, type PaperIndexState } from "@/components/index-button";
 import { IngestButton, type PaperIngestState } from "@/components/ingest-button";
 import type { PaperSearchResult } from "@/lib/api";
 
@@ -30,12 +31,31 @@ function truncateText(value: string, maxLength: number): string {
 type PaperCardProps = {
   paper: PaperSearchResult;
   ingestState?: PaperIngestState;
+  indexState?: PaperIndexState;
   onIngest: (paper: PaperSearchResult) => void;
+  onIndex: (paper: PaperSearchResult) => void;
 };
 
-export function PaperCard({ paper, ingestState, onIngest }: PaperCardProps) {
+export function PaperCard({
+  paper,
+  ingestState,
+  indexState,
+  onIngest,
+  onIndex,
+}: PaperCardProps) {
   const abstractSnippet = truncateText(paper.abstract, 360);
   const ingestMessage = formatIngestMessage(ingestState, Boolean(paper.pdf_url));
+  const indexMessage = formatIndexMessage(indexState);
+  const shouldShowIndexAction =
+    ingestState?.status === "completed" ||
+    ingestState?.status === "cached" ||
+    indexState?.status === "indexing" ||
+    indexState?.status === "indexed" ||
+    indexState?.status === "cached" ||
+    indexState?.status === "failed";
+  const detailMessages = [ingestMessage, indexMessage].filter(
+    (message): message is string => Boolean(message),
+  );
 
   return (
     <article className="rounded-[1.6rem] border border-black/10 bg-white/78 p-5 shadow-panel">
@@ -58,6 +78,13 @@ export function PaperCard({ paper, ingestState, onIngest }: PaperCardProps) {
               state={ingestState}
               onIngest={() => onIngest(paper)}
             />
+            {shouldShowIndexAction ? (
+              <IndexButton
+                paperTitle={paper.title}
+                state={indexState}
+                onIndex={() => onIndex(paper)}
+              />
+            ) : null}
             {paper.pdf_url ? (
               <a
                 href={paper.pdf_url}
@@ -80,11 +107,14 @@ export function PaperCard({ paper, ingestState, onIngest }: PaperCardProps) {
             </a>
           </div>
 
-          {ingestMessage ? (
-            <p className="max-w-sm text-sm leading-6 text-[color:var(--muted)] lg:text-right">
-              {ingestMessage}
+          {detailMessages.map((message) => (
+            <p
+              key={message}
+              className="max-w-sm text-sm leading-6 text-[color:var(--muted)] lg:text-right"
+            >
+              {message}
             </p>
-          ) : null}
+          ))}
         </div>
       </div>
 
@@ -148,4 +178,33 @@ function formatIngestMessage(
   }
 
   return ingestState.message ?? null;
+}
+
+function formatIndexMessage(indexState: PaperIndexState | undefined): string | null {
+  if (!indexState || indexState.status === "idle") {
+    return null;
+  }
+
+  if (indexState.status === "indexing") {
+    return indexState.message ?? "Chunking parsed pages and building local embeddings.";
+  }
+
+  if (indexState.status === "failed") {
+    return indexState.message ?? "Unable to index this paper right now.";
+  }
+
+  const chunkLabel =
+    typeof indexState.chunkCount === "number"
+      ? `${numberFormatter.format(indexState.chunkCount)} chunks`
+      : "paper chunks";
+
+  if (indexState.status === "indexed") {
+    if (indexState.collectionName) {
+      return `Indexed ${chunkLabel} into ${indexState.collectionName}.`;
+    }
+
+    return `Indexed ${chunkLabel} for retrieval.`;
+  }
+
+  return `Local index already up to date with ${chunkLabel}.`;
 }
