@@ -53,11 +53,11 @@ export function Sidebar() {
 
       <div className="hidden px-6 pb-6 md:block">
         <div className="rounded-3xl border border-black/10 bg-[#13212d] p-5 text-slate-100 shadow-panel">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-300">Phase 1 stack</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-slate-300">Tech stack</p>
           <ul className="mt-4 space-y-2 text-sm text-slate-200">
-            <li>FastAPI backend scaffold</li>
-            <li>Next.js dashboard shell</li>
-            <li>Chroma-ready local data layout</li>
+            <li>FastAPI + Python backend</li>
+            <li>Next.js + React frontend</li>
+            <li>Chroma vector store</li>
           </ul>
         </div>
       </div>

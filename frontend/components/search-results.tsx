@@ -89,7 +89,7 @@ export function SearchResults({
                   {results.length} {resultLabel} for &quot;{activeQuery}&quot;
                 </h3>
                 <p className="text-sm text-[color:var(--muted)]">
-                  Normalized from the arXiv Atom feed for direct reuse in later phases.
+                  Normalized from the arXiv Atom feed. Ready to ingest and index.
                 </p>
               </div>
             </div>

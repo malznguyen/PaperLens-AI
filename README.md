@@ -1,111 +1,106 @@
 # PaperLens AI
 
-PaperLens AI is a workflow-first scientific research assistant for discovering, ingesting, and analyzing academic papers. This Phase 1 scaffold establishes a clean FastAPI + Next.js foundation that is ready for arXiv search, PDF ingestion, retrieval, and grounded generation in later phases.
+PaperLens AI is a workflow-first scientific research assistant that discovers, ingests, indexes, and analyzes academic papers with full citation traceability. Every generated answer, comparison, and synthesis is grounded in retrieved evidence from real paper content -- nothing is invented.
 
-## Phase 1 deliverables
+## Key features
 
-- FastAPI backend scaffold with modular routing and `GET /api/health`
-- Next.js dashboard shell with responsive research workspace pages
-- Tailwind CSS styling tuned for a professional academic UI
-- Local-first data directories prepared for PDFs, parsed text, cache, and Chroma
-- Docker Compose setup for frontend and backend development
+- **arXiv search** -- topic-based paper discovery with normalized metadata
+- **PDF ingestion** -- download and parse papers into structured page-level text
+- **Local indexing** -- chunk, embed (BGE), and store in Chroma for semantic retrieval
+- **Grounded research chat** -- retrieval-augmented Q&A with page-level citations
+- **Structured comparison** -- side-by-side table comparing 2-5 papers across methodology, datasets, strengths, limitations, and contributions
+- **Topic synthesis** -- literature-review style overview with themes, trends, gaps, and future directions
+- **Full provenance** -- every workflow exposes the retrieved chunks, citation labels, and timing metrics so outputs can be audited
 
-## Repository structure
+## Architecture
 
 ```text
-paperlens-ai/
-  frontend/
-    app/
-      chat/
-      compare/
-      search/
-      workspace/
-      globals.css
-      layout.tsx
-      page.tsx
-    components/
-    lib/
-    hooks/
-    types/
-    public/
-    package.json
-    tsconfig.json
-    next.config.ts
-  backend/
-    app/
-      api/
-        routes/
-      core/
-      services/
-      workflows/
-      models/
-      schemas/
-      repositories/
-      utils/
-      main.py
-    data/
-      raw_pdfs/
-      parsed/
-      cache/
-      chroma/
-    tests/
-    requirements.txt
-  docs/
-    Agent.md
-    System_overview.md
-  .env.example
-  .gitignore
-  docker-compose.yml
-  README.md
++-----------------------+         +---------------------------+
+|   Next.js Frontend    |  HTTP   |     FastAPI Backend        |
+|   (React 19 + TW)     | ------> |                           |
++-----------------------+         |  Routes (thin validation)  |
+                                  |    |                       |
+                                  |  Services (business logic) |
+                                  |    |                       |
+                                  |  Workflows (orchestration) |
+                                  |    |                       |
+                                  |  Repositories (Chroma, FS) |
+                                  +---------------------------+
+                                           |
+                                  +---------------------------+
+                                  |   Local Data Layer         |
+                                  |   raw_pdfs/ parsed/ cache/ |
+                                  |   chroma/ (vector DB)      |
+                                  +---------------------------+
+                                           |
+                                  +---------------------------+
+                                  |   External Services        |
+                                  |   arXiv API, OpenRouter    |
+                                  +---------------------------+
 ```
 
-## Major files
+**Workflow pipeline:** Search --> Ingest --> Index --> Chat / Compare / Synthesis
 
-### Backend
+Each workflow follows retrieve --> rerank --> generate --> cite, and every response includes the evidence package so the UI can show what the model actually saw.
 
-- `backend/app/main.py` creates the FastAPI application, applies CORS, and mounts the API router.
-- `backend/app/core/config.py` centralizes environment settings and data directory management.
-- `backend/app/api/router.py` composes the health, search, ingest, chat, and compare route groups.
-- `backend/app/services/` holds route-independent placeholder logic so future business workflows stay outside the API layer.
-- `backend/tests/test_health.py` verifies that the health endpoint responds successfully.
+## Tech stack
 
-### Frontend
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS |
+| Backend | FastAPI, Python 3.11, Pydantic |
+| Embeddings | sentence-transformers (BGE-small-en-v1.5) |
+| Reranking | cross-encoder/ms-marco-MiniLM-L6-v2 |
+| Vector DB | Chroma (local, persistent) |
+| LLM | OpenRouter API (configurable model) |
+| PDF parsing | PyMuPDF (fitz) |
+| Testing | pytest (backend), TypeScript strict mode (frontend) |
 
-- `frontend/app/layout.tsx` loads the global shell and shared typography.
-- `frontend/components/app-shell.tsx` provides the sidebar, top bar, and main workspace frame.
-- `frontend/app/page.tsx` is the dashboard landing page with workflow cards, status panels, and future session placeholders.
-- `frontend/app/search/page.tsx`, `frontend/app/workspace/page.tsx`, `frontend/app/chat/page.tsx`, and `frontend/app/compare/page.tsx` define the main product sections.
-- `frontend/lib/api.ts` provides the backend base URL helper and API path constants.
+## Setup and run
 
-### Project setup
+### Prerequisites
 
-- `.env.example` documents the core runtime configuration for both apps.
-- `docker-compose.yml` starts the frontend and backend together for local development.
-- `.gitignore` excludes generated app data, local environment files, and the local reference docs in `docs/`.
+- Python 3.11+
+- Node.js 20+
+- An OpenRouter API key (free tier works)
 
-## Local development
+### 1. Clone and configure
 
-### 1. Prepare environment variables
+```bash
+git clone <repo-url>
+cd paperlens_ai
+cp .env.example .env
+```
 
-Copy `.env.example` to `.env` and add values as needed.
+Edit `.env` and add your OpenRouter API key:
 
-### 2. Run the backend
+```env
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
+```
+
+### 2. Start the backend
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate
+
+# Activate the virtual environment
+.venv\Scripts\activate          # Windows cmd / PowerShell
+# source .venv/bin/activate     # macOS / Linux / Git Bash
+
 pip install -r backend/requirements.txt
 cd backend
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload
 ```
 
-Backend health check:
+Backend runs at `http://localhost:8000`. Verify with:
 
 ```bash
 curl http://localhost:8000/api/health
 ```
 
-### 3. Run the frontend
+### 3. Start the frontend
+
+Open a separate terminal at the repo root:
 
 ```bash
 cd frontend
@@ -113,44 +108,122 @@ npm install
 npm run dev
 ```
 
-Frontend URL:
+Frontend runs at `http://localhost:3000`.
 
-```text
-http://localhost:3000
-```
-
-### 4. Run with Docker Compose
+### 4. Alternative: Docker Compose
 
 ```bash
 docker compose up --build
 ```
 
-This starts:
+This starts both services together.
 
-- frontend on `http://localhost:3000`
-- backend on `http://localhost:8000`
+## Environment variables
 
-## Available Phase 1 endpoints
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `APP_ENV` | `development` | Runtime environment |
+| `LOG_LEVEL` | `INFO` | Logging verbosity |
+| `ALLOWED_ORIGINS` | `http://localhost:3000` | CORS origins |
+| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000` | Frontend API target |
+| `ARXIV_BASE_URL` | `http://export.arxiv.org/api/query` | arXiv Atom endpoint |
+| `OPENROUTER_API_KEY` | (required) | OpenRouter authentication |
+| `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter endpoint |
+| `OPENROUTER_MODEL` | `openrouter/free` | LLM model identifier |
+| `OPENROUTER_TIMEOUT_SECONDS` | `45` | Generation timeout |
+| `EMBEDDING_MODEL` | `BAAI/bge-small-en-v1.5` | Embedding model name |
+| `RETRIEVAL_TOP_K_DEFAULT` | `6` | Default retrieval count |
+| `RETRIEVAL_TOP_K_MAX` | `12` | Maximum retrieval count |
+| `RERANKING_ENABLED` | `true` | Cross-encoder reranking toggle |
+| `RERANKER_MODEL` | `cross-encoder/ms-marco-MiniLM-L6-v2` | Reranker model |
+| `DATA_DIR` | `backend/data` | Root data directory |
+| `CHROMA_DIR` | `backend/data/chroma` | Chroma persistence path |
 
-- `GET /api/health`
-- `POST /api/search-papers`
-- `POST /api/ingest`
-- `POST /api/chat`
-- `POST /api/compare`
+## Typical user workflow
 
-The non-health endpoints are placeholder contracts for the upcoming implementation phases.
+1. **Search** -- go to the Search page, enter a topic like "vision transformers", review results
+2. **Ingest** -- click "Ingest" on 2-3 papers to download and parse their PDFs
+3. **Index** -- click "Index" on each ingested paper to chunk, embed, and store in Chroma
+4. **Chat** -- go to the Chat page, enter paper IDs, ask a grounded question
+5. **Compare** -- go to the Compare page, enter 2-5 paper IDs, generate a structured comparison table
+6. **Synthesis** -- on the Compare page, switch to synthesis mode, enter a topic to get a literature overview
 
-## Notes for coursework submission
+Each step preserves provenance: paper IDs, page numbers, and chunk labels flow through the entire pipeline.
 
-- The architecture keeps route handlers thin and moves logic into services so future workflows remain explainable.
-- The UI is intentionally framed as a research workspace rather than a generic chatbot demo.
-- `docs/Agent.md` and `docs/System_overview.md` are kept as local reference files and are ignored by `.gitignore` per your instruction not to push them.
+### Demo corpus setup
 
-## Phase 2: arXiv search integration
+For a repeatable demo, search for `"attention mechanism transformer"` and ingest+index the first 3 papers. Then use those paper IDs across chat, compare, and synthesis. See `docs/demo_script.md` for the full walkthrough.
 
-Recommended next work:
+## API endpoints
 
-1. Implement an `arxiv_service.py` that queries and normalizes arXiv Atom results.
-2. Replace the placeholder `/api/search-papers` response with real paper metadata models.
-3. Connect the Search Papers page to the backend with a simple topic search form and results list.
-4. Add error states, loading states, and basic backend tests around the search service.
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/health` | System health check |
+| POST | `/api/search-papers` | arXiv topic search |
+| POST | `/api/ingest` | Download PDF + parse text |
+| POST | `/api/index-paper` | Chunk + embed + index to Chroma |
+| POST | `/api/chat` | Grounded Q&A with citations |
+| POST | `/api/compare` | Multi-paper structured comparison |
+| POST | `/api/summarize-topic` | Literature synthesis |
+
+## Testing
+
+### Backend tests
+
+```bash
+cd backend
+pytest -v
+```
+
+### Frontend type check and build
+
+```bash
+cd frontend
+npx tsc --noEmit
+npm run build
+```
+
+## Repository structure
+
+```text
+paperlens_ai/
+  frontend/
+    app/              # Next.js pages (dashboard, search, chat, compare)
+    components/       # React components (experiences, UI atoms, cards)
+    lib/              # API client, utilities, paper-id parsing
+  backend/
+    app/
+      api/routes/     # FastAPI route handlers (thin validation)
+      core/           # Config, logging
+      services/       # Business logic (citation, evaluation, embedding, ...)
+      workflows/      # Orchestration (chat, compare, synthesis, ingest, indexing)
+      schemas/        # Pydantic request/response models
+      repositories/   # Chroma vector DB interface
+      utils/          # File, text, prompt, hash utilities
+    data/             # Local storage (PDFs, parsed text, cache, Chroma)
+    tests/            # pytest test suite
+  docs/               # Architecture docs, demo script, report outline
+  .env.example        # Environment variable template
+  docker-compose.yml  # Local development setup
+```
+
+## Limitations
+
+- No persistent user sessions or authentication -- all state is local to the running instance
+- No database beyond Chroma -- paper metadata lives in the file system
+- LLM quality depends on the OpenRouter model and free-tier rate limits
+- PDF parsing may miss complex layouts, tables, or math-heavy content
+- Embedding model is small (BGE-small) for fast local inference, not state-of-the-art accuracy
+- No concurrent multi-user support -- designed as a single-user research tool
+- arXiv search uses the public Atom API with its rate limits
+
+## Future improvements
+
+- Persistent paper workspace with saved sessions and search history
+- Streaming LLM responses for better perceived latency
+- Support for non-arXiv paper sources (Semantic Scholar, DOI lookup)
+- Fine-grained section-level parsing (abstract, methods, results extraction)
+- User-configurable comparison dimensions
+- Export comparison tables and synthesis to PDF/Markdown
+- Multi-turn conversation with context carry-over
+- Improved citation resolution with in-text inline markers

@@ -1,4 +1,4 @@
-import { CalendarDays, FlaskConical, ShieldCheck } from "lucide-react";
+import { CalendarDays, ShieldCheck } from "lucide-react";
 
 import { StatusChip } from "@/components/status-chip";
 
@@ -14,8 +14,8 @@ export function TopBar() {
     <header className="sticky top-0 z-10 border-b border-black/10 bg-[color:var(--panel)]/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-8">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">Phase 1 foundation</p>
-          <h2 className="mt-1 text-2xl text-slate-900">Scientific literature workflow dashboard</h2>
+          <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">PaperLens AI</p>
+          <h2 className="mt-1 text-2xl text-slate-900">Research workflow dashboard</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-sm text-[color:var(--muted)]">
           <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/75 px-3 py-2">
@@ -24,11 +24,7 @@ export function TopBar() {
           </div>
           <StatusChip tone="positive">
             <ShieldCheck className="mr-2 h-3.5 w-3.5" />
-            Local-first scaffold
-          </StatusChip>
-          <StatusChip tone="neutral">
-            <FlaskConical className="mr-2 h-3.5 w-3.5" />
-            Ready for arXiv integration
+            Local-first pipeline
           </StatusChip>
         </div>
       </div>

@@ -22,20 +22,30 @@ const workflowSteps = [
   },
 ];
 
-const ingestionBacklog = [
-  { label: "Search connector", state: "Ready for Phase 2" },
-  { label: "PDF caching pipeline", state: "Planned" },
-  { label: "Chroma indexing job", state: "Planned" },
+const pipelineModules = [
+  { label: "arXiv search", state: "Live", ready: true },
+  { label: "PDF ingestion", state: "Live", ready: true },
+  { label: "Chroma indexing", state: "Live", ready: true },
+  { label: "Grounded chat", state: "Live", ready: true },
+  { label: "Structured compare", state: "Live", ready: true },
+  { label: "Topic synthesis", state: "Live", ready: true },
 ];
 
-const recentSessions = [
+const quickStart = [
   {
-    title: "Transformer interpretability landscape",
-    note: "Placeholder session shell for future saved runs and retrieval traces.",
+    step: "1",
+    title: "Search for papers",
+    note: 'Go to Search, enter a topic like "attention mechanism transformer", and review results.',
   },
   {
-    title: "Biomedical RAG evaluation methods",
-    note: "Reserved area for compare outputs, citations, and ingestion history.",
+    step: "2",
+    title: "Ingest and index",
+    note: "Click Ingest then Index on 2-3 papers to build your local evidence base.",
+  },
+  {
+    step: "3",
+    title: "Chat, compare, or synthesize",
+    note: "Use the paper IDs in Chat, Compare, or Synthesis to get grounded, citable answers.",
   },
 ];
 
@@ -47,8 +57,8 @@ export default function HomePage() {
       <section className="grid gap-4 xl:grid-cols-[1.7fr_1fr]">
         <SectionCard
           eyebrow="Workflow overview"
-          title="PaperLens AI is built around a research workflow, not an open-ended chatbot."
-          description="Each stage is structured so future outputs can stay grounded in paper metadata and retrieved evidence."
+          title="Four stages from discovery to analysis."
+          description="Each stage is structured so outputs stay grounded in paper metadata and retrieved evidence."
         >
           <div className="grid gap-4 md:grid-cols-2">
             {workflowSteps.map((step, index) => (
@@ -63,21 +73,18 @@ export default function HomePage() {
         </SectionCard>
 
         <SectionCard
-          eyebrow="Status panel"
-          title="Foundation progress"
-          description="Phase 1 keeps the shell visible while the retrieval pipeline is still being wired."
+          eyebrow="Pipeline status"
+          title="All workflow modules are live"
+          description="Search, ingest, index, chat, compare, and synthesis are operational."
         >
           <div className="space-y-3">
-            {ingestionBacklog.map((item) => (
+            {pipelineModules.map((item) => (
               <div
                 key={item.label}
                 className="flex items-center justify-between rounded-2xl border border-black/10 bg-white/70 px-4 py-3"
               >
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{item.label}</p>
-                  <p className="text-xs text-[color:var(--muted)]">Workflow module placeholder</p>
-                </div>
-                <StatusChip tone={item.state === "Ready for Phase 2" ? "positive" : "neutral"}>
+                <p className="text-sm font-medium text-slate-900">{item.label}</p>
+                <StatusChip tone={item.ready ? "positive" : "neutral"}>
                   {item.state}
                 </StatusChip>
               </div>
@@ -88,23 +95,23 @@ export default function HomePage() {
 
       <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
         <SectionCard
-          eyebrow="Recent sessions"
-          title="Workspace memory is staged for future research threads."
-          description="This panel will later store search traces, compare snapshots, and citation-aware summaries."
+          eyebrow="Quick start"
+          title="Three steps to a grounded research answer."
+          description="Follow this path to go from topic search to a citable, evidence-backed response."
         >
           <div className="space-y-3">
-            {recentSessions.map((session, index) => (
+            {quickStart.map((item) => (
               <div
-                key={session.title}
+                key={item.step}
                 className="rounded-2xl border border-black/10 bg-white/75 px-4 py-4"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-lg text-slate-900">{session.title}</h3>
+                  <h3 className="text-lg text-slate-900">{item.title}</h3>
                   <span className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
-                    Session 0{index + 1}
+                    Step {item.step}
                   </span>
                 </div>
-                <p className="text-sm leading-6 text-[color:var(--muted)]">{session.note}</p>
+                <p className="text-sm leading-6 text-[color:var(--muted)]">{item.note}</p>
               </div>
             ))}
           </div>
@@ -112,25 +119,26 @@ export default function HomePage() {
 
         <SectionCard
           eyebrow="Traceability"
-          title="Source provenance will stay visible throughout the product."
-          description="Paper metadata, retrieved chunks, and citation snippets each have a dedicated home in the UI contract."
+          title="Source provenance is visible throughout the product."
+          description="Paper metadata, retrieved chunks, and citation snippets each have a dedicated home in the UI."
         >
           <div className="space-y-4">
             <div className="rounded-2xl border border-dashed border-[color:var(--accent)]/35 bg-[color:var(--accent-soft)] p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--accent)]">
-                Planned evidence model
+                Evidence model
               </p>
               <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-800">
-                <li>Paper title, abstract, and source link</li>
-                <li>Chunk-level evidence with page or section metadata</li>
-                <li>Grounded compare and summary outputs with citations</li>
+                <li>Paper title, abstract, and arXiv source link</li>
+                <li>Chunk-level evidence with page number and word boundaries</li>
+                <li>Citation labels (S1, S2, ...) mapping to specific chunks</li>
+                <li>Workflow metrics: retrieval, reranking, and generation timing</li>
               </ul>
             </div>
             <div className="rounded-2xl border border-black/10 bg-white/70 p-4">
-              <p className="text-sm font-medium text-slate-900">API contract preview</p>
+              <p className="text-sm font-medium text-slate-900">Grounding guarantee</p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
-                The frontend already targets dedicated routes for search, ingest, chat, and comparison so
-                later phases can land without reorganizing the UI shell.
+                The model is instructed to answer only from retrieved evidence. If a field is not
+                supported, it says &ldquo;Not stated in retrieved evidence&rdquo; instead of guessing.
               </p>
             </div>
           </div>

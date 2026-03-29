@@ -6,6 +6,7 @@ import { BookMarked, LoaderCircle, Sparkles } from "lucide-react";
 
 import { CitationList } from "@/components/citation-list";
 import { MetaMetricsCard } from "@/components/meta-metrics-card";
+import { PaperIdInput } from "@/components/paper-id-input";
 import { RetrievedChunkCard } from "@/components/retrieved-chunk-card";
 import { SectionCard } from "@/components/section-card";
 import { StatusChip } from "@/components/status-chip";
@@ -98,24 +99,18 @@ export function TopicSynthesisExperience() {
               </div>
             </label>
 
-            <label className="block">
-              <span className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
-                Restrict to paper IDs (optional)
-              </span>
-              <input
-                name="paperIds"
-                value={paperIdsInput}
-                onChange={(event) => {
-                  setPaperIdsInput(event.target.value);
-                  if (inputError) {
-                    setInputError(null);
-                  }
-                }}
-                placeholder="2401.12345, 2402.67890"
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                autoComplete="off"
-              />
-            </label>
+            <PaperIdInput
+              value={paperIdsInput}
+              onChange={(value) => {
+                setPaperIdsInput(value);
+                if (inputError) {
+                  setInputError(null);
+                }
+              }}
+              label="Restrict to paper IDs (optional)"
+              placeholder="2401.12345, 2402.67890"
+              helperText="Copy IDs from the Search page after indexing"
+            />
 
             {inputError ? (
               <p className="text-sm text-[#8a4b3a]">{inputError}</p>

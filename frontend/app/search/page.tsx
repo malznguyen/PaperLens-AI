@@ -1,4 +1,4 @@
-import { FileSearch, Link2, Network } from "lucide-react";
+import { FileSearch, Link2 } from "lucide-react";
 
 import { SearchExperience } from "@/components/search-experience";
 import { SectionCard } from "@/components/section-card";
@@ -7,15 +7,15 @@ import { StatusChip } from "@/components/status-chip";
 const searchHighlights = [
   {
     label: "Normalized records",
-    detail: "Titles, authors, abstracts, categories, and source links come back in a stable JSON contract.",
+    detail: "Titles, authors, abstracts, categories, and source links returned in a stable format.",
   },
   {
-    label: "Resilient MVP",
-    detail: "Loading, empty, and upstream error states are surfaced without breaking the dashboard flow.",
+    label: "Error handling",
+    detail: "Loading, empty, and upstream error states are surfaced without breaking the workflow.",
   },
   {
-    label: "Phase-ready output",
-    detail: "The response shape is designed so later ingestion and comparison steps can reuse paper metadata directly.",
+    label: "Pipeline-ready output",
+    detail: "Paper metadata flows directly into ingestion, indexing, and comparison stages.",
   },
 ];
 
@@ -23,18 +23,14 @@ export default function SearchPage() {
   return (
     <div className="space-y-6">
       <SectionCard
-        eyebrow="Phase 2 live"
+        eyebrow="Paper discovery"
         title="Search arXiv by topic and inspect normalized paper metadata."
-        description="This page now runs a real paper discovery workflow: topic search goes to the FastAPI backend, the backend normalizes arXiv Atom results, and the UI keeps source links visible for the next phases."
+        description="Enter a research topic, review results with full metadata, then ingest and index papers for downstream analysis."
       >
         <div className="flex flex-wrap gap-3">
           <StatusChip tone="positive">
             <FileSearch className="mr-2 h-3.5 w-3.5" />
             arXiv integration live
-          </StatusChip>
-          <StatusChip tone="neutral">
-            <Network className="mr-2 h-3.5 w-3.5" />
-            POST /api/search-papers
           </StatusChip>
           <StatusChip tone="neutral">
             <Link2 className="mr-2 h-3.5 w-3.5" />

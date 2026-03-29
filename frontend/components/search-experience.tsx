@@ -172,7 +172,7 @@ export function SearchExperience() {
       <SectionCard
         eyebrow="Search controls"
         title="Run a topic search against arXiv."
-        description="Enter a research topic, choose how many papers to pull back, and review normalized metadata before moving to later workflow phases."
+        description="Enter a research topic, choose how many papers to pull back, and review normalized metadata."
       >
         <SearchBar
           query={query}

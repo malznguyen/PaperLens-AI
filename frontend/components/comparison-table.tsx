@@ -1,8 +1,9 @@
 import { EmptyState } from "@/components/ui/empty-state";
-import type { ComparisonRow } from "@/lib/api";
+import type { ChatCitation, ComparisonRow } from "@/lib/api";
 
 type ComparisonTableProps = {
   rows: ComparisonRow[];
+  citations?: ChatCitation[];
 };
 
 const columns: Array<{ key: keyof ComparisonRow; label: string }> = [
@@ -15,7 +16,11 @@ const columns: Array<{ key: keyof ComparisonRow; label: string }> = [
   { key: "key_contribution", label: "Key contribution" },
 ];
 
-export function ComparisonTable({ rows }: ComparisonTableProps) {
+function getCitationsForPaper(paperId: string, citations: ChatCitation[]): ChatCitation[] {
+  return citations.filter((c) => c.paper_id === paperId);
+}
+
+export function ComparisonTable({ rows, citations = [] }: ComparisonTableProps) {
   if (rows.length === 0) {
     return (
       <EmptyState
@@ -42,30 +47,49 @@ export function ComparisonTable({ rows }: ComparisonTableProps) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.paper_id} className="align-top">
-              {columns.map((column) => {
-                const cellValue = row[column.key];
-                return (
-                  <td
-                    key={`${row.paper_id}-${column.key}`}
-                    className="border-b border-black/10 px-4 py-4 text-sm leading-6 text-slate-800 last:border-b-0"
-                  >
-                    {column.key === "paper_title" ? (
-                      <div>
-                        <p className="font-medium text-slate-900">{row.paper_title}</p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">
-                          {row.paper_id}
-                        </p>
-                      </div>
-                    ) : (
-                      cellValue
-                    )}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+          {rows.map((row) => {
+            const paperCitations = getCitationsForPaper(row.paper_id, citations);
+            return (
+              <tr key={row.paper_id} className="align-top">
+                {columns.map((column) => {
+                  const cellValue = row[column.key];
+                  return (
+                    <td
+                      key={`${row.paper_id}-${column.key}`}
+                      className="border-b border-black/10 px-4 py-4 text-sm leading-6 text-slate-800 last:border-b-0"
+                    >
+                      {column.key === "paper_title" ? (
+                        <div>
+                          <p className="font-medium text-slate-900">{row.paper_title}</p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">
+                            {row.paper_id}
+                          </p>
+                          {paperCitations.length > 0 ? (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {paperCitations.map((c) => (
+                                <a
+                                  key={c.chunk_id}
+                                  href={c.source_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  title={`${c.paper_title} - Page ${c.page_number}`}
+                                  className="inline-flex items-center rounded-lg bg-[color:var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[color:var(--accent)] transition hover:bg-[color:var(--accent)]/20"
+                                >
+                                  {c.label} p.{c.page_number}
+                                </a>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        cellValue
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

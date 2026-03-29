@@ -1,4 +1,4 @@
-import { BookText, MessageSquareQuote, ScanSearch } from "lucide-react";
+import { BookText, ScanSearch } from "lucide-react";
 
 import { ChatExperience } from "@/components/chat-experience";
 import { SectionCard } from "@/components/section-card";
@@ -23,22 +23,18 @@ export default function ChatPage() {
   return (
     <div className="space-y-6">
       <SectionCard
-        eyebrow="Phase 5 live"
-        title="Ask grounded research questions over indexed papers."
-        description="This chat flow retrieves supporting chunks from Chroma, keeps page-aware provenance visible, and asks the model to answer only from the retrieved evidence."
+        eyebrow="Grounded Q&A"
+        title="Ask research questions over indexed papers."
+        description="Questions retrieve supporting chunks from the vector store, and the model answers only from the retrieved evidence with page-level citations."
       >
         <div className="flex flex-wrap gap-3">
           <StatusChip tone="positive">
             <ScanSearch className="mr-2 h-3.5 w-3.5" />
-            Chroma retrieval live
+            Retrieval-augmented generation
           </StatusChip>
-          <StatusChip tone="neutral">
-            <MessageSquareQuote className="mr-2 h-3.5 w-3.5" />
-            POST /api/chat
-          </StatusChip>
-          <StatusChip tone="neutral">
+          <StatusChip tone="positive">
             <BookText className="mr-2 h-3.5 w-3.5" />
-            Page-level citations rendered
+            Page-level citations
           </StatusChip>
         </div>
 
