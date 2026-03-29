@@ -159,6 +159,9 @@ def test_chat_workflow_generates_grounded_answer_with_citations() -> None:
     assert response.citations[0].label == "S1"
     assert response.citations[1].page_number == 4
     assert response.retrieved_chunks[0].label == "S1"
+    assert response.meta is not None
+    assert response.meta.status == "completed"
+    assert response.meta.retrieved_chunk_count == 2
 
 
 def test_chat_workflow_returns_evidence_when_generation_fails() -> None:
@@ -192,6 +195,8 @@ def test_chat_workflow_returns_evidence_when_generation_fails() -> None:
     assert response.message == "Evidence retrieved, but answer generation failed."
     assert response.citations[0].chunk_id == "2401.12345-p2-c1"
     assert response.retrieved_chunks[0].page_number == 2
+    assert response.meta is not None
+    assert response.meta.status == "partial"
 
 
 def test_chat_workflow_falls_back_to_retrieval_order_when_reranker_fails() -> None:
@@ -278,6 +283,15 @@ def test_chat_route_returns_response_shape_for_successful_generation() -> None:
                 "similarity_score": 0.9,
             }
         ],
+        meta={
+            "retrieval_ms": 8,
+            "reranking_ms": 0,
+            "generation_ms": 19,
+            "total_ms": 31,
+            "retrieved_chunk_count": 1,
+            "citation_count": 1,
+            "status": "completed",
+        },
         message="Answer generated successfully.",
     )
 
@@ -293,5 +307,6 @@ def test_chat_route_returns_response_shape_for_successful_generation() -> None:
     assert response.status_code == 200
     assert response.json()["citations"][0]["page_number"] == 3
     assert response.json()["retrieved_chunks"][0]["chunk_id"] == "2401.12345-p3-c1"
+    assert response.json()["meta"]["citation_count"] == 1
     assert response.json()["message"] == "Answer generated successfully."
     app.dependency_overrides = {}

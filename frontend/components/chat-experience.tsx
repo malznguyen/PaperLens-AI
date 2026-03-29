@@ -7,6 +7,7 @@ import { ChatInput } from "@/components/chat-input";
 import { ChatMessage } from "@/components/chat-message";
 import { CitationList } from "@/components/citation-list";
 import { RetrievedChunkCard } from "@/components/retrieved-chunk-card";
+import { MetaMetricsCard } from "@/components/meta-metrics-card";
 import { SectionCard } from "@/components/section-card";
 import { StatusChip } from "@/components/status-chip";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -16,25 +17,9 @@ import {
   researchChat,
   type ResearchChatResponse,
 } from "@/lib/api";
+import { parsePaperIds } from "@/lib/paper-ids";
 
 const DEFAULT_TOP_K = 6;
-
-function parsePaperIds(value: string): string[] {
-  const seen = new Set<string>();
-  const paperIds: string[] = [];
-
-  for (const rawPart of value.split(",")) {
-    const normalized = rawPart.trim();
-    if (!normalized || seen.has(normalized)) {
-      continue;
-    }
-
-    seen.add(normalized);
-    paperIds.push(normalized);
-  }
-
-  return paperIds;
-}
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -166,6 +151,7 @@ export function ChatExperience() {
               ) : null}
 
               <ChatMessage response={response} />
+              <MetaMetricsCard meta={response.meta} />
               <CitationList citations={response.citations} />
             </div>
           ) : null}

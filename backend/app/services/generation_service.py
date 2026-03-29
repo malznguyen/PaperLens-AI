@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, TypeVar
 
 import httpx
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from app.core.config import Settings, get_settings
 from app.schemas.chat import GeneratedAnswerPayload, GenerationResult, RetrievedChunk
@@ -31,6 +31,9 @@ class GenerationMalformedResponseError(GenerationServiceError):
     """Raised when the model response cannot be parsed safely."""
 
 
+StructuredResponseModel = TypeVar("StructuredResponseModel", bound=BaseModel)
+
+
 class GenerationService:
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or get_settings()
@@ -48,11 +51,54 @@ class GenerationService:
                 "OPENROUTER_API_KEY is not configured for grounded answer generation."
             )
 
+        generated_payload = await self.generate_structured_payload(
+            self._build_messages(question, chunks),
+            response_model=GeneratedAnswerPayload,
+            temperature=0.1,
+            max_tokens=500,
+        )
+        return GenerationResult(
+            answer=generated_payload.answer,
+            citation_labels=generated_payload.citation_labels,
+            insufficient_evidence=generated_payload.insufficient_evidence,
+        )
+
+    async def generate_structured_payload(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        response_model: type[StructuredResponseModel],
+        temperature: float,
+        max_tokens: int,
+    ) -> StructuredResponseModel:
+        if not messages:
+            raise GenerationMalformedResponseError("Cannot generate a structured payload without prompt messages.")
+
+        response_payload = await self._request_completion(
+            messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        content = self._extract_message_content(response_payload)
+        return self._parse_structured_payload(content, response_model)
+
+    async def _request_completion(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        temperature: float,
+        max_tokens: int,
+    ) -> dict[str, Any]:
+        if not self._settings.openrouter_api_key:
+            raise GenerationConfigurationError(
+                "OPENROUTER_API_KEY is not configured for grounded answer generation."
+            )
+
         payload = {
             "model": self._settings.openrouter_model,
-            "messages": self._build_messages(question, chunks),
-            "temperature": 0.1,
-            "max_tokens": 500,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
         }
 
         timeout = httpx.Timeout(self._settings.openrouter_timeout_seconds)
@@ -87,18 +133,9 @@ class GenerationService:
             )
 
         try:
-            response_payload = response.json()
+            return response.json()
         except ValueError as exc:
             raise GenerationMalformedResponseError("OpenRouter returned invalid JSON.") from exc
-
-        content = self._extract_message_content(response_payload)
-        generated_payload = self._parse_generated_payload(content)
-        return GenerationResult(
-            answer=generated_payload.answer,
-            citation_labels=generated_payload.citation_labels,
-            insufficient_evidence=generated_payload.insufficient_evidence,
-            model=response_payload.get("model"),
-        )
 
     def _build_messages(self, question: str, chunks: list[RetrievedChunk]) -> list[dict[str, str]]:
         context_block = build_context_block(
@@ -161,6 +198,13 @@ class GenerationService:
 
     @staticmethod
     def _parse_generated_payload(content: str) -> GeneratedAnswerPayload:
+        return GenerationService._parse_structured_payload(content, GeneratedAnswerPayload)
+
+    @staticmethod
+    def _parse_structured_payload(
+        content: str,
+        response_model: type[StructuredResponseModel],
+    ) -> StructuredResponseModel:
         normalized = content.strip()
         if normalized.startswith("```"):
             normalized = normalized.strip("`").strip()
@@ -180,6 +224,6 @@ class GenerationService:
             raise GenerationMalformedResponseError("Model response was not valid JSON.") from exc
 
         try:
-            return GeneratedAnswerPayload.model_validate(payload)
+            return response_model.model_validate(payload)
         except ValidationError as exc:
             raise GenerationMalformedResponseError("Model response JSON was missing required fields.") from exc

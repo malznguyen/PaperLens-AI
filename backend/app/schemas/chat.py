@@ -133,10 +133,21 @@ class GenerationResult(BaseModel):
     model: str | None = None
 
 
+class WorkflowMeta(BaseModel):
+    retrieval_ms: int = Field(ge=0)
+    reranking_ms: int = Field(default=0, ge=0)
+    generation_ms: int = Field(default=0, ge=0)
+    total_ms: int = Field(ge=0)
+    retrieved_chunk_count: int = Field(ge=0)
+    citation_count: int = Field(ge=0)
+    status: Literal["completed", "partial", "failed"]
+
+
 class ChatResponse(BaseModel):
     status: Literal["completed", "partial"]
     question: str
     answer: str | None = None
     citations: list[ChatCitation] = Field(default_factory=list)
     retrieved_chunks: list[RetrievedChunk] = Field(default_factory=list)
+    meta: WorkflowMeta | None = None
     message: str

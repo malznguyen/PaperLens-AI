@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     retrieval_top_k_default: int = 6
     retrieval_top_k_max: int = 12
+    compare_top_k_per_paper: int = 2
+    synthesis_top_k: int = 6
+    compare_max_papers: int = 5
+    enable_metrics_collection: bool = True
+    compare_generation_temperature: float = 0.1
+    synthesis_generation_temperature: float = 0.1
     reranking_enabled: bool = True
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L6-v2"
     chunk_size_words: int = 850
@@ -104,6 +110,29 @@ class Settings(BaseSettings):
             raise ValueError(
                 "retrieval_top_k_max must be greater than or equal to retrieval_top_k_default."
             )
+        return value
+
+    @field_validator("compare_top_k_per_paper", "synthesis_top_k", "compare_max_papers")
+    @classmethod
+    def validate_phase_six_limits(cls, value: int, info) -> int:
+        if value <= 0:
+            raise ValueError(f"{info.field_name} must be greater than zero.")
+        return value
+
+    @field_validator("compare_max_papers")
+    @classmethod
+    def validate_compare_max_papers(cls, value: int) -> int:
+        if value < 2:
+            raise ValueError("compare_max_papers must be at least 2.")
+        if value > 5:
+            raise ValueError("compare_max_papers must not exceed 5.")
+        return value
+
+    @field_validator("compare_generation_temperature", "synthesis_generation_temperature")
+    @classmethod
+    def validate_generation_temperatures(cls, value: float, info) -> float:
+        if value < 0 or value > 1:
+            raise ValueError(f"{info.field_name} must be between 0 and 1.")
         return value
 
     @field_validator("generation_chunk_char_limit", "generation_context_char_limit")
