@@ -3,11 +3,12 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 
+import type { PaperIndexState } from "@/components/index-button";
 import type { PaperIngestState } from "@/components/ingest-button";
 import { SearchBar } from "@/components/search-bar";
 import { SearchResults } from "@/components/search-results";
 import { SectionCard } from "@/components/section-card";
-import { ingestPaper, searchPapers, type PaperSearchResult } from "@/lib/api";
+import { indexPaper, ingestPaper, searchPapers, type PaperSearchResult } from "@/lib/api";
 
 const DEFAULT_MAX_RESULTS = 10;
 
@@ -22,6 +23,7 @@ export function SearchExperience() {
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [ingestStates, setIngestStates] = useState<Record<string, PaperIngestState>>({});
+  const [indexStates, setIndexStates] = useState<Record<string, PaperIndexState>>({});
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -102,6 +104,18 @@ export function SearchExperience() {
           wordCount: response.word_count,
         },
       }));
+
+      if (response.status === "completed") {
+        setIndexStates((currentStates) => {
+          if (!currentStates[paper.id]) {
+            return currentStates;
+          }
+
+          const nextStates = { ...currentStates };
+          delete nextStates[paper.id];
+          return nextStates;
+        });
+      }
     } catch (error) {
       setIngestStates((currentStates) => ({
         ...currentStates,
@@ -111,6 +125,43 @@ export function SearchExperience() {
             error instanceof Error
               ? error.message
               : "Unable to ingest this paper right now.",
+        },
+      }));
+    }
+  }
+
+  async function handleIndexPaper(paper: PaperSearchResult): Promise<void> {
+    setIndexStates((currentStates) => ({
+      ...currentStates,
+      [paper.id]: {
+        status: "indexing",
+        message: "Chunking parsed pages and building local embeddings.",
+      },
+    }));
+
+    try {
+      const response = await indexPaper({
+        paper_id: paper.id,
+      });
+
+      setIndexStates((currentStates) => ({
+        ...currentStates,
+        [paper.id]: {
+          status: response.status === "completed" ? "indexed" : "cached",
+          message: response.message,
+          chunkCount: response.chunk_count,
+          collectionName: response.collection_name,
+        },
+      }));
+    } catch (error) {
+      setIndexStates((currentStates) => ({
+        ...currentStates,
+        [paper.id]: {
+          status: "failed",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Unable to index this paper right now.",
         },
       }));
     }
@@ -147,7 +198,9 @@ export function SearchExperience() {
           hasSearched={hasSearched}
           isLoading={isLoading}
           ingestStates={ingestStates}
+          indexStates={indexStates}
           onIngestPaper={handleIngestPaper}
+          onIndexPaper={handleIndexPaper}
         />
       </SectionCard>
     </section>

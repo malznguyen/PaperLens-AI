@@ -5,6 +5,10 @@ export type SearchPapersRequest = {
   max_results?: number;
 };
 
+export type IndexPaperRequest = {
+  paper_id: string;
+};
+
 export type PaperSearchResult = {
   id: string;
   title: string;
@@ -47,6 +51,14 @@ export type IngestPaperResponse = {
   message: string;
 };
 
+export type IndexPaperResponse = {
+  paper_id: string;
+  status: "completed" | "cached";
+  chunk_count: number;
+  collection_name: string;
+  message: string;
+};
+
 type ApiErrorResponse = {
   detail?: string;
 };
@@ -68,6 +80,7 @@ export const apiRoutes = {
   health: "/api/health",
   searchPapers: "/api/search-papers",
   ingest: "/api/ingest",
+  indexPaper: "/api/index-paper",
   chat: "/api/chat",
   compare: "/api/compare",
 } as const;
@@ -106,6 +119,22 @@ export async function ingestPaper(
 
   await ensureSuccessfulResponse(response, "Unable to ingest this paper right now.");
   return (await response.json()) as IngestPaperResponse;
+}
+
+export async function indexPaper(
+  payload: IndexPaperRequest,
+): Promise<IndexPaperResponse> {
+  const response = await fetch(buildApiUrl(apiRoutes.indexPaper), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  await ensureSuccessfulResponse(response, "Unable to index this paper right now.");
+  return (await response.json()) as IndexPaperResponse;
 }
 
 async function ensureSuccessfulResponse(

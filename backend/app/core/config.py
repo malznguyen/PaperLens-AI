@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     openrouter_model: str = "openrouter/free"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L6-v2"
+    chunk_size_words: int = 850
+    chunk_overlap_words: int = 120
+    chroma_collection_name: str = "paper_chunks"
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
@@ -42,12 +45,34 @@ class Settings(BaseSettings):
             return [item.strip() for item in value.split(",") if item.strip()]
         return value
 
+    @field_validator("chunk_size_words")
+    @classmethod
+    def validate_chunk_size_words(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("chunk_size_words must be greater than zero.")
+        return value
+
+    @field_validator("chunk_overlap_words")
+    @classmethod
+    def validate_chunk_overlap_words(cls, value: int, info) -> int:
+        chunk_size = info.data.get("chunk_size_words", 1)
+        if value < 0:
+            raise ValueError("chunk_overlap_words must not be negative.")
+        if value >= chunk_size:
+            raise ValueError("chunk_overlap_words must be smaller than chunk_size_words.")
+        return value
+
+    @property
+    def indexing_cache_dir(self) -> Path:
+        return self.cache_dir / "indexing"
+
     def ensure_directories(self) -> None:
         for path in (
             self.data_dir,
             self.raw_pdfs_dir,
             self.parsed_dir,
             self.cache_dir,
+            self.indexing_cache_dir,
             self.chroma_dir,
         ):
             path.mkdir(parents=True, exist_ok=True)
