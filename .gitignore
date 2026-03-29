@@ -1,0 +1,37 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+
+# Local research artifacts
+backend/data/raw_pdfs/*
+!backend/data/raw_pdfs/.gitkeep
+backend/data/parsed/*
+!backend/data/parsed/.gitkeep
+backend/data/cache/*
+!backend/data/cache/.gitkeep
+backend/data/chroma/*
+!backend/data/chroma/.gitkeep
+
+# Local reference docs
+docs/Agent.md
+docs/System_overview.md
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
