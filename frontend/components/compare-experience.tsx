@@ -6,6 +6,7 @@ import { LoaderCircle, Scale, Sparkles } from "lucide-react";
 
 import { CitationList } from "@/components/citation-list";
 import { ComparisonTable } from "@/components/comparison-table";
+import { PaperIdInput } from "@/components/paper-id-input";
 import { MetaMetricsCard } from "@/components/meta-metrics-card";
 import { RetrievedChunkCard } from "@/components/retrieved-chunk-card";
 import { SectionCard } from "@/components/section-card";
@@ -77,24 +78,18 @@ export function CompareExperience() {
           description="This workflow retrieves evidence per selected paper, keeps citations page-level, and asks the model to fill a structured comparison table without inventing missing fields."
         >
           <form onSubmit={handleSubmit} className="space-y-5">
-            <label className="block">
-              <span className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
-                Paper IDs
-              </span>
-              <input
-                name="paperIds"
-                value={paperIdsInput}
-                onChange={(event) => {
-                  setPaperIdsInput(event.target.value);
-                  if (inputError) {
-                    setInputError(null);
-                  }
-                }}
-                placeholder="2401.12345, 2402.67890, 2403.11111"
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                autoComplete="off"
-              />
-            </label>
+            <PaperIdInput
+              value={paperIdsInput}
+              onChange={(value) => {
+                setPaperIdsInput(value);
+                if (inputError) {
+                  setInputError(null);
+                }
+              }}
+              label="Paper IDs (2 to 5)"
+              placeholder="2401.12345, 2402.67890, 2403.11111"
+              helperText="Copy IDs from the Search page after indexing"
+            />
 
             <label className="block">
               <span className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
@@ -223,7 +218,7 @@ export function CompareExperience() {
               </div>
 
               <MetaMetricsCard meta={response.meta} />
-              <ComparisonTable rows={response.comparison_table} />
+              <ComparisonTable rows={response.comparison_table} citations={response.citations} />
               <CitationList citations={response.citations} />
             </div>
           ) : null}

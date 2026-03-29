@@ -1,11 +1,11 @@
-import { ArrowRight, Database, NotebookTabs, SearchCheck } from "lucide-react";
+import { ArrowRight, Database, SearchCheck, Workflow } from "lucide-react";
 import Link from "next/link";
 
 import { StatusChip } from "@/components/status-chip";
 
 const metrics = [
   {
-    label: "Primary source",
+    label: "Paper source",
     value: "arXiv API",
     icon: SearchCheck,
   },
@@ -15,9 +15,9 @@ const metrics = [
     icon: Database,
   },
   {
-    label: "Workflow posture",
-    value: "LangGraph-ready",
-    icon: NotebookTabs,
+    label: "Generation mode",
+    value: "RAG pipeline",
+    icon: Workflow,
   },
 ];
 
@@ -26,27 +26,27 @@ export function HeroPanel() {
     <section className="overflow-hidden rounded-[2rem] border border-black/10 bg-[color:var(--panel)] shadow-panel">
       <div className="grid gap-6 px-6 py-8 md:px-8 md:py-10 xl:grid-cols-[1.35fr_0.85fr]">
         <div>
-          <StatusChip tone="neutral">Workflow-centric scientific research assistant</StatusChip>
-          <h1 className="mt-5 max-w-3xl text-4xl leading-tight text-slate-950 md:text-5xl">
-            A serious workspace for searching, ingesting, and reasoning over research papers.
+          <StatusChip tone="neutral">Grounded research assistant</StatusChip>
+          <h1 className="mt-5 max-w-3xl text-3xl leading-tight text-slate-950 md:text-4xl">
+            Search, ingest, index, and analyze academic papers with full citation traceability.
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--muted)] md:text-lg">
-            PaperLens AI is designed for structured literature review. The scaffold already separates
-            discovery, ingestion, retrieval, and comparison so future phases can stay modular and grounded.
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--muted)] md:text-base">
+            PaperLens AI keeps discovery, ingestion, retrieval, and comparison in separate workflow
+            stages so every generated answer stays grounded in real paper content.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/search"
               className="inline-flex items-center gap-2 rounded-full bg-[#13212d] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#1c3143]"
             >
-              Open search workspace
+              Search papers
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/workspace"
               className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-white"
             >
-              Review ingestion shell
+              View paper workspace
             </Link>
           </div>
         </div>

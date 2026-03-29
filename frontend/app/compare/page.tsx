@@ -1,4 +1,4 @@
-import { BookMarked, GitCompareArrows, Network } from "lucide-react";
+import { BookMarked, GitCompareArrows } from "lucide-react";
 
 import { CompareExperience } from "@/components/compare-experience";
 import { SectionCard } from "@/components/section-card";
@@ -24,22 +24,18 @@ export default function ComparePage() {
   return (
     <div className="space-y-6">
       <SectionCard
-        eyebrow="Phase 6 live"
+        eyebrow="Compare & synthesize"
         title="Compare indexed papers and synthesize a grounded topic overview."
-        description="This page extends the Phase 5 retrieval stack into higher-level research workflows: structured paper comparison, literature-overview synthesis, explicit citations, and lightweight evaluation metrics."
+        description="Structured paper comparison, literature-overview synthesis, explicit citations, and evaluation metrics — all grounded in retrieved evidence."
       >
         <div className="flex flex-wrap gap-3">
           <StatusChip tone="positive">
             <GitCompareArrows className="mr-2 h-3.5 w-3.5" />
-            Multi-paper compare live
+            Multi-paper comparison
           </StatusChip>
-          <StatusChip tone="neutral">
-            <Network className="mr-2 h-3.5 w-3.5" />
-            POST /api/compare
-          </StatusChip>
-          <StatusChip tone="neutral">
+          <StatusChip tone="positive">
             <BookMarked className="mr-2 h-3.5 w-3.5" />
-            POST /api/summarize-topic
+            Topic synthesis
           </StatusChip>
         </div>
 

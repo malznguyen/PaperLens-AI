@@ -1,6 +1,8 @@
 import type { FormEventHandler } from "react";
 import { LoaderCircle, MessageSquareText, SendHorizontal } from "lucide-react";
 
+import { PaperIdInput } from "@/components/paper-id-input";
+
 const topKOptions = [4, 6, 8, 10];
 
 type ChatInputProps = {
@@ -60,19 +62,15 @@ export function ChatInput({
       </div>
 
       <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
-        <label className="flex flex-col gap-2 text-sm text-[color:var(--muted)]">
-          <span className="text-xs uppercase tracking-[0.24em]">
-            Restrict to paper IDs (optional)
-          </span>
-          <input
-            name="paperIds"
+        <div>
+          <PaperIdInput
             value={paperIdsInput}
-            onChange={(event) => onPaperIdsChange(event.target.value)}
+            onChange={onPaperIdsChange}
+            label="Restrict to paper IDs (optional)"
             placeholder="2401.12345, 2402.67890"
-            className="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
-            autoComplete="off"
+            helperText="Copy IDs from the Search page after indexing"
           />
-        </label>
+        </div>
 
         <label className="flex flex-col gap-2 text-sm text-[color:var(--muted)]">
           <span className="text-xs uppercase tracking-[0.24em]">Top chunks</span>

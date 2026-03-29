@@ -8,7 +8,10 @@ type MetaMetricsCardProps = {
 };
 
 function formatMs(value: number): string {
-  return `${value} ms`;
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1)}s`;
+  }
+  return `${Math.round(value)}ms`;
 }
 
 export function MetaMetricsCard({ meta }: MetaMetricsCardProps) {

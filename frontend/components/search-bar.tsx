@@ -93,11 +93,11 @@ export function SearchBar({
 
       <div className="rounded-2xl border border-dashed border-[color:var(--accent)]/35 bg-[color:var(--accent-soft)] p-4">
         <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--accent)]">
-          Phase 2 scope
+          Next steps
         </p>
         <p className="mt-2 text-sm leading-6 text-slate-800">
-          This search covers topic discovery and metadata review only. PDF caching,
-          ingestion, embeddings, and grounded chat stay in later phases.
+          After reviewing results, click Ingest and Index on promising papers. Then use their
+          IDs in Chat, Compare, or Synthesis for grounded, citable analysis.
         </p>
       </div>
     </form>
