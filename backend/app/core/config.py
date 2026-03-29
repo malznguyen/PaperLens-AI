@@ -31,18 +31,36 @@ class Settings(BaseSettings):
     chroma_dir: Path = DEFAULT_DATA_DIR / "chroma"
 
     arxiv_base_url: str = "http://export.arxiv.org/api/query"
+    openrouter_api_key: str | None = None
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
     openrouter_model: str = "openrouter/free"
+    openrouter_timeout_seconds: float = 45.0
     embedding_model: str = "BAAI/bge-small-en-v1.5"
+    retrieval_top_k_default: int = 6
+    retrieval_top_k_max: int = 12
+    reranking_enabled: bool = True
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L6-v2"
     chunk_size_words: int = 850
     chunk_overlap_words: int = 120
     chroma_collection_name: str = "paper_chunks"
+    generation_chunk_char_limit: int = 1800
+    generation_context_char_limit: int = 12000
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
     def parse_allowed_origins(cls, value: Any) -> list[str] | Any:
         if isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
+        return value
+
+    @field_validator("openrouter_api_key", mode="before")
+    @classmethod
+    def parse_openrouter_api_key(cls, value: Any) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            normalized = value.strip()
+            return normalized or None
         return value
 
     @field_validator("chunk_size_words")
@@ -60,6 +78,39 @@ class Settings(BaseSettings):
             raise ValueError("chunk_overlap_words must not be negative.")
         if value >= chunk_size:
             raise ValueError("chunk_overlap_words must be smaller than chunk_size_words.")
+        return value
+
+    @field_validator("openrouter_timeout_seconds")
+    @classmethod
+    def validate_openrouter_timeout_seconds(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("openrouter_timeout_seconds must be greater than zero.")
+        return value
+
+    @field_validator("retrieval_top_k_default")
+    @classmethod
+    def validate_retrieval_top_k_default(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("retrieval_top_k_default must be greater than zero.")
+        return value
+
+    @field_validator("retrieval_top_k_max")
+    @classmethod
+    def validate_retrieval_top_k_max(cls, value: int, info) -> int:
+        default_top_k = info.data.get("retrieval_top_k_default", 1)
+        if value <= 0:
+            raise ValueError("retrieval_top_k_max must be greater than zero.")
+        if value < default_top_k:
+            raise ValueError(
+                "retrieval_top_k_max must be greater than or equal to retrieval_top_k_default."
+            )
+        return value
+
+    @field_validator("generation_chunk_char_limit", "generation_context_char_limit")
+    @classmethod
+    def validate_generation_char_limits(cls, value: int, info) -> int:
+        if value <= 0:
+            raise ValueError(f"{info.field_name} must be greater than zero.")
         return value
 
     @property

@@ -9,6 +9,12 @@ export type IndexPaperRequest = {
   paper_id: string;
 };
 
+export type ResearchChatRequest = {
+  question: string;
+  paper_ids?: string[];
+  top_k?: number;
+};
+
 export type PaperSearchResult = {
   id: string;
   title: string;
@@ -56,6 +62,41 @@ export type IndexPaperResponse = {
   status: "completed" | "cached";
   chunk_count: number;
   collection_name: string;
+  message: string;
+};
+
+export type ChatCitation = {
+  label: string;
+  paper_id: string;
+  paper_title: string;
+  page_number: number;
+  chunk_id: string;
+  source_url: string;
+};
+
+export type RetrievedChunk = {
+  label?: string | null;
+  chunk_id: string;
+  paper_id: string;
+  paper_title: string;
+  page_number: number;
+  chunk_index: number;
+  page_chunk_index: number;
+  source_url: string;
+  pdf_path: string;
+  text: string;
+  word_count: number;
+  start_word_index: number;
+  end_word_index: number;
+  similarity_score?: number | null;
+};
+
+export type ResearchChatResponse = {
+  status: "completed" | "partial";
+  question: string;
+  answer: string | null;
+  citations: ChatCitation[];
+  retrieved_chunks: RetrievedChunk[];
   message: string;
 };
 
@@ -135,6 +176,25 @@ export async function indexPaper(
 
   await ensureSuccessfulResponse(response, "Unable to index this paper right now.");
   return (await response.json()) as IndexPaperResponse;
+}
+
+export async function researchChat(
+  payload: ResearchChatRequest,
+): Promise<ResearchChatResponse> {
+  const response = await fetch(buildApiUrl(apiRoutes.chat), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  await ensureSuccessfulResponse(
+    response,
+    "Unable to generate a grounded answer right now.",
+  );
+  return (await response.json()) as ResearchChatResponse;
 }
 
 async function ensureSuccessfulResponse(
