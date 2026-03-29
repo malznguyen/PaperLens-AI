@@ -12,14 +12,15 @@ class CitationService:
         top_k: int,
     ) -> list[RetrievedChunk]:
         deduplicated_chunks: list[RetrievedChunk] = []
-        seen_texts: set[str] = set()
+        seen_texts: set[tuple[str, str]] = set()
 
         for chunk in chunks:
             normalized_text = normalize_whitespace(chunk.text).lower()
-            if not normalized_text or normalized_text in seen_texts:
+            dedupe_key = (chunk.paper_id, normalized_text)
+            if not normalized_text or dedupe_key in seen_texts:
                 continue
 
-            seen_texts.add(normalized_text)
+            seen_texts.add(dedupe_key)
             deduplicated_chunks.append(chunk)
 
             if len(deduplicated_chunks) >= top_k:

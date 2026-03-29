@@ -15,6 +15,16 @@ export type ResearchChatRequest = {
   top_k?: number;
 };
 
+export type ComparePapersRequest = {
+  paper_ids: string[];
+  question?: string;
+};
+
+export type TopicSynthesisRequest = {
+  topic?: string;
+  paper_ids?: string[];
+};
+
 export type PaperSearchResult = {
   id: string;
   title: string;
@@ -91,12 +101,59 @@ export type RetrievedChunk = {
   similarity_score?: number | null;
 };
 
+export type WorkflowMeta = {
+  retrieval_ms: number;
+  reranking_ms: number;
+  generation_ms: number;
+  total_ms: number;
+  retrieved_chunk_count: number;
+  citation_count: number;
+  status: "completed" | "partial" | "failed";
+};
+
 export type ResearchChatResponse = {
   status: "completed" | "partial";
   question: string;
   answer: string | null;
   citations: ChatCitation[];
   retrieved_chunks: RetrievedChunk[];
+  meta?: WorkflowMeta | null;
+  message: string;
+};
+
+export type ComparisonRow = {
+  paper_id: string;
+  paper_title: string;
+  objective: string;
+  methodology: string;
+  dataset: string;
+  strengths: string;
+  limitations: string;
+  key_contribution: string;
+};
+
+export type ComparePapersResponse = {
+  status: "completed" | "partial";
+  summary: string | null;
+  comparison_table: ComparisonRow[];
+  citations: ChatCitation[];
+  retrieved_chunks: RetrievedChunk[];
+  meta?: WorkflowMeta | null;
+  message: string;
+};
+
+export type TopicSynthesisResponse = {
+  status: "completed" | "partial";
+  topic: string;
+  overview: string | null;
+  themes: string[];
+  trends: string[];
+  open_challenges: string[];
+  research_gaps: string[];
+  future_directions: string[];
+  citations: ChatCitation[];
+  retrieved_chunks: RetrievedChunk[];
+  meta?: WorkflowMeta | null;
   message: string;
 };
 
@@ -124,6 +181,7 @@ export const apiRoutes = {
   indexPaper: "/api/index-paper",
   chat: "/api/chat",
   compare: "/api/compare",
+  summarizeTopic: "/api/summarize-topic",
 } as const;
 
 export function buildApiUrl(path: string): string {
@@ -195,6 +253,44 @@ export async function researchChat(
     "Unable to generate a grounded answer right now.",
   );
   return (await response.json()) as ResearchChatResponse;
+}
+
+export async function comparePapers(
+  payload: ComparePapersRequest,
+): Promise<ComparePapersResponse> {
+  const response = await fetch(buildApiUrl(apiRoutes.compare), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  await ensureSuccessfulResponse(
+    response,
+    "Unable to generate a grounded paper comparison right now.",
+  );
+  return (await response.json()) as ComparePapersResponse;
+}
+
+export async function summarizeTopic(
+  payload: TopicSynthesisRequest,
+): Promise<TopicSynthesisResponse> {
+  const response = await fetch(buildApiUrl(apiRoutes.summarizeTopic), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  await ensureSuccessfulResponse(
+    response,
+    "Unable to generate a grounded topic synthesis right now.",
+  );
+  return (await response.json()) as TopicSynthesisResponse;
 }
 
 async function ensureSuccessfulResponse(
