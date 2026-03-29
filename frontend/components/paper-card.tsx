@@ -1,5 +1,6 @@
 import { CalendarDays, ExternalLink, FileText } from "lucide-react";
 
+import { IngestButton, type PaperIngestState } from "@/components/ingest-button";
 import type { PaperSearchResult } from "@/lib/api";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -7,6 +8,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   year: "numeric",
 });
+const numberFormatter = new Intl.NumberFormat("en-US");
 
 function formatDateLabel(value: string): string {
   const date = new Date(value);
@@ -27,10 +29,13 @@ function truncateText(value: string, maxLength: number): string {
 
 type PaperCardProps = {
   paper: PaperSearchResult;
+  ingestState?: PaperIngestState;
+  onIngest: (paper: PaperSearchResult) => void;
 };
 
-export function PaperCard({ paper }: PaperCardProps) {
+export function PaperCard({ paper, ingestState, onIngest }: PaperCardProps) {
   const abstractSnippet = truncateText(paper.abstract, 360);
+  const ingestMessage = formatIngestMessage(ingestState, Boolean(paper.pdf_url));
 
   return (
     <article className="rounded-[1.6rem] border border-black/10 bg-white/78 p-5 shadow-panel">
@@ -45,27 +50,41 @@ export function PaperCard({ paper }: PaperCardProps) {
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-wrap gap-2">
-          {paper.pdf_url ? (
+        <div className="flex shrink-0 flex-col items-start gap-2 lg:items-end">
+          <div className="flex flex-wrap gap-2 lg:justify-end">
+            <IngestButton
+              hasPdfUrl={Boolean(paper.pdf_url)}
+              paperTitle={paper.title}
+              state={ingestState}
+              onIngest={() => onIngest(paper)}
+            />
+            {paper.pdf_url ? (
+              <a
+                href={paper.pdf_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white"
+              >
+                <FileText className="h-4 w-4" />
+                PDF
+              </a>
+            ) : null}
             <a
-              href={paper.pdf_url}
+              href={paper.source_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white"
+              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80"
             >
-              <FileText className="h-4 w-4" />
-              PDF
+              <ExternalLink className="h-4 w-4" />
+              Source
             </a>
+          </div>
+
+          {ingestMessage ? (
+            <p className="max-w-sm text-sm leading-6 text-[color:var(--muted)] lg:text-right">
+              {ingestMessage}
+            </p>
           ) : null}
-          <a
-            href={paper.source_url}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80"
-          >
-            <ExternalLink className="h-4 w-4" />
-            Source
-          </a>
         </div>
       </div>
 
@@ -97,4 +116,36 @@ export function PaperCard({ paper }: PaperCardProps) {
       <p className="mt-4 text-sm leading-7 text-slate-700">{abstractSnippet}</p>
     </article>
   );
+}
+
+function formatIngestMessage(
+  ingestState: PaperIngestState | undefined,
+  hasPdfUrl: boolean,
+): string | null {
+  if (!hasPdfUrl) {
+    return "PDF link unavailable for this record.";
+  }
+
+  if (!ingestState || ingestState.status === "idle") {
+    return null;
+  }
+
+  if (ingestState.status === "ingesting") {
+    return ingestState.message ?? "Downloading the PDF and extracting text.";
+  }
+
+  const stats =
+    typeof ingestState.pageCount === "number" && typeof ingestState.wordCount === "number"
+      ? `${ingestState.pageCount} pages | ${numberFormatter.format(ingestState.wordCount)} words`
+      : null;
+
+  if (stats && ingestState.message) {
+    return `${ingestState.message} ${stats}.`;
+  }
+
+  if (stats) {
+    return stats;
+  }
+
+  return ingestState.message ?? null;
 }

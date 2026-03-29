@@ -1,5 +1,6 @@
 import { LibraryBig } from "lucide-react";
 
+import type { PaperIngestState } from "@/components/ingest-button";
 import { PaperCard } from "@/components/paper-card";
 import { StatusChip } from "@/components/status-chip";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,6 +15,8 @@ type SearchResultsProps = {
   errorMessage: string | null;
   hasSearched: boolean;
   isLoading: boolean;
+  ingestStates: Record<string, PaperIngestState>;
+  onIngestPaper: (paper: PaperSearchResult) => void;
 };
 
 export function SearchResults({
@@ -23,6 +26,8 @@ export function SearchResults({
   errorMessage,
   hasSearched,
   isLoading,
+  ingestStates,
+  onIngestPaper,
 }: SearchResultsProps) {
   if (!hasSearched) {
     return (
@@ -107,7 +112,12 @@ export function SearchResults({
 
       <div className="space-y-3">
         {results.map((paper) => (
-          <PaperCard key={`${paper.id}-${paper.updated_at}`} paper={paper} />
+          <PaperCard
+            key={`${paper.id}-${paper.updated_at}`}
+            paper={paper}
+            ingestState={ingestStates[paper.id]}
+            onIngest={onIngestPaper}
+          />
         ))}
       </div>
     </div>
