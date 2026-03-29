@@ -32,6 +32,7 @@ class GenerationMalformedResponseError(GenerationServiceError):
 
 
 StructuredResponseModel = TypeVar("StructuredResponseModel", bound=BaseModel)
+STRUCTURED_FREE_MODEL_FALLBACK = "google/gemma-3n-e4b-it:free"
 
 
 class GenerationService:
@@ -76,6 +77,7 @@ class GenerationService:
 
         response_payload = await self._request_completion(
             messages,
+            response_model=response_model,
             temperature=temperature,
             max_tokens=max_tokens,
         )
@@ -86,6 +88,7 @@ class GenerationService:
         self,
         messages: list[dict[str, str]],
         *,
+        response_model: type[BaseModel] | None = None,
         temperature: float,
         max_tokens: int,
     ) -> dict[str, Any]:
@@ -95,11 +98,19 @@ class GenerationService:
             )
 
         payload = {
-            "model": self._settings.openrouter_model,
-            "messages": messages,
+            "model": self._select_model(response_model),
+            "messages": self._select_messages(messages, response_model),
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
+        if response_model is not None and payload["model"] != STRUCTURED_FREE_MODEL_FALLBACK:
+            payload["reasoning"] = {
+                "effort": "none",
+                "exclude": True,
+            }
+            payload["response_format"] = self._build_response_format(response_model)
+            payload["provider"] = {"require_parameters": True}
+            payload["plugins"] = [{"id": "response-healing"}]
 
         timeout = httpx.Timeout(self._settings.openrouter_timeout_seconds)
         endpoint = f"{self._settings.openrouter_base_url.rstrip('/')}/chat/completions"
@@ -194,6 +205,11 @@ class GenerationService:
             if text_parts:
                 return "\n".join(text_parts)
 
+        if content is None and (message.get("reasoning") or message.get("reasoning_details")):
+            raise GenerationMalformedResponseError(
+                "OpenRouter returned reasoning tokens without a final assistant message."
+            )
+
         raise GenerationMalformedResponseError("OpenRouter returned an unsupported message content shape.")
 
     @staticmethod
@@ -227,3 +243,55 @@ class GenerationService:
             return response_model.model_validate(payload)
         except ValidationError as exc:
             raise GenerationMalformedResponseError("Model response JSON was missing required fields.") from exc
+
+    @staticmethod
+    def _build_response_format(response_model: type[BaseModel]) -> dict[str, Any]:
+        return {
+            "type": "json_schema",
+            "json_schema": {
+                "name": response_model.__name__,
+                "strict": True,
+                "schema": response_model.model_json_schema(by_alias=True),
+            },
+        }
+
+    def _select_model(self, response_model: type[BaseModel] | None) -> str:
+        if response_model is not None and self._settings.openrouter_model == "openrouter/free":
+            return STRUCTURED_FREE_MODEL_FALLBACK
+        return self._settings.openrouter_model
+
+    def _select_messages(
+        self,
+        messages: list[dict[str, str]],
+        response_model: type[BaseModel] | None,
+    ) -> list[dict[str, str]]:
+        if response_model is not None and self._settings.openrouter_model == "openrouter/free":
+            return self._collapse_system_messages(messages)
+        return messages
+
+    @staticmethod
+    def _collapse_system_messages(messages: list[dict[str, str]]) -> list[dict[str, str]]:
+        system_parts: list[str] = []
+        remaining_messages: list[dict[str, str]] = []
+
+        for message in messages:
+            role = message.get("role")
+            content = message.get("content", "")
+            if role == "system":
+                if content.strip():
+                    system_parts.append(content.strip())
+                continue
+            remaining_messages.append(message)
+
+        if not system_parts:
+            return messages
+
+        system_block = "\n\n".join(system_parts)
+        if not remaining_messages:
+            return [{"role": "user", "content": system_block}]
+
+        first_message = dict(remaining_messages[0])
+        first_content = first_message.get("content", "").strip()
+        first_message["content"] = f"{system_block}\n\n{first_content}" if first_content else system_block
+
+        return [first_message, *remaining_messages[1:]]
