@@ -3,10 +3,11 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 
+import type { PaperIngestState } from "@/components/ingest-button";
 import { SearchBar } from "@/components/search-bar";
 import { SearchResults } from "@/components/search-results";
 import { SectionCard } from "@/components/section-card";
-import { searchPapers, type PaperSearchResult } from "@/lib/api";
+import { ingestPaper, searchPapers, type PaperSearchResult } from "@/lib/api";
 
 const DEFAULT_MAX_RESULTS = 10;
 
@@ -20,6 +21,7 @@ export function SearchExperience() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [ingestStates, setIngestStates] = useState<Record<string, PaperIngestState>>({});
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -65,6 +67,55 @@ export function SearchExperience() {
     }
   }
 
+  async function handleIngestPaper(paper: PaperSearchResult): Promise<void> {
+    if (!paper.pdf_url) {
+      setIngestStates((currentStates) => ({
+        ...currentStates,
+        [paper.id]: {
+          status: "failed",
+          message: "This paper does not currently expose a PDF URL.",
+        },
+      }));
+      return;
+    }
+
+    setIngestStates((currentStates) => ({
+      ...currentStates,
+      [paper.id]: {
+        status: "ingesting",
+        message: "Downloading the PDF and extracting text.",
+      },
+    }));
+
+    try {
+      const response = await ingestPaper({
+        ...paper,
+        pdf_url: paper.pdf_url,
+      });
+
+      setIngestStates((currentStates) => ({
+        ...currentStates,
+        [paper.id]: {
+          status: response.status,
+          message: response.message,
+          pageCount: response.page_count,
+          wordCount: response.word_count,
+        },
+      }));
+    } catch (error) {
+      setIngestStates((currentStates) => ({
+        ...currentStates,
+        [paper.id]: {
+          status: "failed",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Unable to ingest this paper right now.",
+        },
+      }));
+    }
+  }
+
   return (
     <section className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
       <SectionCard
@@ -95,6 +146,8 @@ export function SearchExperience() {
           errorMessage={searchError}
           hasSearched={hasSearched}
           isLoading={isLoading}
+          ingestStates={ingestStates}
+          onIngestPaper={handleIngestPaper}
         />
       </SectionCard>
     </section>
