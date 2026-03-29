@@ -20,7 +20,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     version="0.1.0",
-    description="Phase 1 API scaffold for the PaperLens AI research workflow.",
+    description="Workflow-first API for grounded paper search, ingest, indexing, chat, comparison, and synthesis.",
     lifespan=lifespan,
 )
 

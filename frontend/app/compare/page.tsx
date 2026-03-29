@@ -8,15 +8,18 @@ import { TopicSynthesisExperience } from "@/components/topic-synthesis-experienc
 const compareHighlights = [
   {
     label: "Per-paper evidence retrieval",
-    detail: "The compare workflow pulls relevant chunks for each selected paper so one document cannot dominate the entire comparison.",
+    detail:
+      "The compare workflow pulls relevant chunks for each selected paper so one document cannot dominate the entire comparison.",
   },
   {
     label: "Structured synthesis output",
-    detail: "Rows are normalized around objective, methodology, dataset, strengths, limitations, and contribution while keeping source traceability visible.",
+    detail:
+      "Rows are normalized around objective, methodology, dataset, strengths, limitations, and contribution while keeping source traceability visible.",
   },
   {
     label: "Reporting-friendly metrics",
-    detail: "Latency and evidence counts are returned with the response for demos, screenshots, and coursework evaluation notes.",
+    detail:
+      "Latency and evidence counts are returned with the response for demos, screenshots, and coursework evaluation notes.",
   },
 ];
 
@@ -26,7 +29,7 @@ export default function ComparePage() {
       <SectionCard
         eyebrow="Compare & synthesize"
         title="Compare indexed papers and synthesize a grounded topic overview."
-        description="Structured paper comparison, literature-overview synthesis, explicit citations, and evaluation metrics — all grounded in retrieved evidence."
+        description="Structured paper comparison, literature-overview synthesis, explicit citations, and evaluation metrics, all grounded in retrieved evidence."
       >
         <div className="flex flex-wrap gap-3">
           <StatusChip tone="positive">
@@ -43,7 +46,7 @@ export default function ComparePage() {
           {compareHighlights.map((highlight) => (
             <div
               key={highlight.label}
-              className="rounded-2xl border border-black/10 bg-white/75 px-4 py-4"
+              className="rounded-[1.45rem] border border-[color:var(--line)] bg-white/82 px-4 py-4"
             >
               <p className="text-xs uppercase tracking-[0.22em] text-[color:var(--muted)]">
                 {highlight.label}

@@ -45,7 +45,7 @@ export function PaperIdInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+        className="mt-2 w-full rounded-2xl border border-[color:var(--line)] bg-white/84 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
         autoComplete="off"
       />
       {parsedIds.length > 0 ? (
@@ -53,13 +53,13 @@ export function PaperIdInput({
           {parsedIds.map((id) => (
             <span
               key={id}
-              className="inline-flex items-center gap-1 rounded-lg bg-[#f6f0e7] px-2 py-1 text-xs text-slate-700"
+              className="inline-flex items-center gap-1 rounded-full border border-[color:var(--line)] bg-[#f6f0e7] px-2.5 py-1 text-[11px] text-slate-700"
             >
               {id}
               <button
                 type="button"
                 onClick={() => handleRemoveId(id)}
-                className="rounded p-0.5 text-slate-400 transition hover:text-slate-700"
+                className="rounded-full p-0.5 text-slate-400 transition hover:bg-white/80 hover:text-slate-700"
                 aria-label={`Remove ${id}`}
               >
                 <X className="h-3 w-3" />
@@ -69,7 +69,7 @@ export function PaperIdInput({
           <button
             type="button"
             onClick={handleCopyIds}
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-[color:var(--muted)] transition hover:bg-[#f6f0e7] hover:text-slate-700"
+            className="inline-flex items-center gap-1 rounded-full border border-transparent px-2.5 py-1 text-[11px] text-[color:var(--muted)] transition hover:border-[color:var(--line)] hover:bg-[#f6f0e7] hover:text-slate-700"
             title="Copy all IDs for use in other workflows"
           >
             <ClipboardCopy className="h-3 w-3" />

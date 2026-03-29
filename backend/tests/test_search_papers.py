@@ -4,8 +4,10 @@ import httpx
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.services.arxiv_service import ArxivServiceError
+from app.services.semantic_scholar_service import SemanticScholarServiceError
 
-ARXIV_REQUEST = httpx.Request("GET", "http://export.arxiv.org/api/query")
+ARXIV_REQUEST = httpx.Request("GET", "https://export.arxiv.org/api/query")
 SAMPLE_FEED = """<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom">
   <entry>
@@ -44,9 +46,9 @@ def build_response(status_code: int, text: str) -> httpx.Response:
     )
 
 
-@patch("app.services.arxiv_service.httpx.AsyncClient.get", new_callable=AsyncMock)
-def test_search_papers_normalizes_arxiv_response(mock_get: AsyncMock) -> None:
-    mock_get.return_value = build_response(200, SAMPLE_FEED)
+@patch("app.services.arxiv_service.httpx.AsyncClient.send", new_callable=AsyncMock)
+def test_search_papers_normalizes_arxiv_response(mock_send: AsyncMock) -> None:
+    mock_send.return_value = build_response(200, SAMPLE_FEED)
     client = TestClient(app)
 
     response = client.post(
@@ -76,8 +78,8 @@ def test_search_papers_normalizes_arxiv_response(mock_get: AsyncMock) -> None:
     assert result["source_url"] == "http://arxiv.org/abs/2401.12345v1"
 
 
-@patch("app.services.arxiv_service.httpx.AsyncClient.get", new_callable=AsyncMock)
-def test_search_papers_rejects_empty_query(mock_get: AsyncMock) -> None:
+@patch("app.services.arxiv_service.httpx.AsyncClient.send", new_callable=AsyncMock)
+def test_search_papers_rejects_empty_query(mock_send: AsyncMock) -> None:
     client = TestClient(app)
 
     response = client.post(
@@ -90,15 +92,19 @@ def test_search_papers_rejects_empty_query(mock_get: AsyncMock) -> None:
 
     assert response.status_code == 400
     assert response.json() == {"detail": "Query must not be empty."}
-    mock_get.assert_not_called()
+    mock_send.assert_not_called()
 
 
-@patch("app.services.arxiv_service.httpx.AsyncClient.get", new_callable=AsyncMock)
-def test_search_papers_handles_upstream_error(mock_get: AsyncMock) -> None:
-    mock_get.side_effect = [
-        httpx.ConnectError("network failure", request=ARXIV_REQUEST),
-        httpx.ConnectError("network failure", request=ARXIV_REQUEST),
-    ]
+@patch("app.services.search_service.SemanticScholarService.search_papers", new_callable=AsyncMock)
+@patch("app.services.search_service.ArxivService.search_papers", new_callable=AsyncMock)
+def test_search_papers_handles_upstream_error(
+    mock_arxiv_search: AsyncMock,
+    mock_semantic_scholar_search: AsyncMock,
+) -> None:
+    mock_arxiv_search.side_effect = ArxivServiceError("Failed to fetch papers from arXiv.")
+    mock_semantic_scholar_search.side_effect = SemanticScholarServiceError(
+        "Failed to fetch papers from Semantic Scholar."
+    )
     client = TestClient(app)
 
     response = client.post(
@@ -110,5 +116,6 @@ def test_search_papers_handles_upstream_error(mock_get: AsyncMock) -> None:
     )
 
     assert response.status_code == 502
-    assert response.json() == {"detail": "Failed to fetch papers from arXiv."}
-    assert mock_get.await_count == 2
+    assert response.json() == {"detail": "Failed to fetch papers from both arXiv and Semantic Scholar."}
+    mock_arxiv_search.assert_awaited_once()
+    mock_semantic_scholar_search.assert_awaited_once()

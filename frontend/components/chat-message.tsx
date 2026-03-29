@@ -14,7 +14,7 @@ export function ChatMessage({ response }: ChatMessageProps) {
     <div className="space-y-4">
       <div
         className={[
-          "rounded-[1.6rem] border px-5 py-4",
+          "rounded-[1.6rem] border px-5 py-5",
           isPartial
             ? "border-[color:var(--warning)]/25 bg-[color:var(--warning)]/10"
             : "border-[color:var(--success)]/20 bg-[color:var(--success)]/10",
@@ -40,8 +40,10 @@ export function ChatMessage({ response }: ChatMessageProps) {
               <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
                 {isPartial ? "Partial result" : "Grounded answer"}
               </p>
-              <h3 className="text-2xl text-slate-900">
-                {isPartial ? "Evidence retrieved, generation incomplete" : "Answer assembled from retrieved evidence"}
+              <h3 className="text-[1.45rem] leading-tight text-slate-900">
+                {isPartial
+                  ? "Evidence retrieved, generation incomplete"
+                  : "Answer assembled from retrieved evidence"}
               </h3>
             </div>
           </div>
@@ -55,22 +57,22 @@ export function ChatMessage({ response }: ChatMessageProps) {
           </div>
         </div>
 
-        <p className="mt-3 text-sm leading-6 text-slate-800">{response.message}</p>
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-800">{response.message}</p>
       </div>
 
-      <div className="rounded-[1.6rem] border border-black/10 bg-white/76 p-5">
-        <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
+      <div className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 p-5">
+        <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
           Question
         </p>
         <p className="mt-2 text-base leading-7 text-slate-900">{response.question}</p>
       </div>
 
-      <div className="rounded-[1.6rem] border border-black/10 bg-white/82 p-5">
-        <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
+      <div className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/86 p-5">
+        <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
           Answer
         </p>
         {response.answer ? (
-          <div className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-800">
+          <div className="mt-4 whitespace-pre-line text-[15px] leading-8 text-slate-800">
             {response.answer}
           </div>
         ) : (

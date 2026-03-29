@@ -11,7 +11,7 @@ from app.services.search_service import (
 router = APIRouter(prefix="/search-papers")
 
 
-@router.post("", response_model=SearchPapersResponse, summary="Search papers on arXiv")
+@router.post("", response_model=SearchPapersResponse, summary="Search papers from supported providers")
 async def search_papers(
     payload: SearchPapersRequest,
     service: SearchService = Depends(get_search_service),

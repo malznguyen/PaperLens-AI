@@ -6,7 +6,12 @@
 # Python
 __pycache__/
 *.py[cod]
+.mypy_cache/
+.ruff_cache/
 .pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
 .venv/
 venv/
 
@@ -15,6 +20,9 @@ frontend/node_modules/
 frontend/.next/
 frontend/out/
 frontend/.turbo/
+frontend/test-results/
+frontend/playwright-report/
+coverage/
 *.tsbuildinfo
 
 # Local research artifacts
@@ -27,9 +35,15 @@ backend/data/cache/*
 backend/data/chroma/*
 !backend/data/chroma/.gitkeep
 
-# Local reference docs
-docs/Agent.md
-docs/System_overview.md
+# Logs / temp artifacts
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
 # Editors / OS
 .DS_Store

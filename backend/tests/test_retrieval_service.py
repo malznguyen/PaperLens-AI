@@ -3,10 +3,12 @@ import asyncio
 import pytest
 
 from app.schemas.chat import RetrievedChunk
+from app.services.embedding_service import EmbeddingServiceError
 from app.services.retrieval_service import (
     RetrievalNoIndexedPapersError,
     RetrievalNoRelevantChunksError,
     RetrievalService,
+    RetrievalServiceError,
 )
 
 
@@ -17,6 +19,11 @@ class FakeEmbeddingService:
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         self.calls.append(list(texts))
         return [[0.25, 0.75]]
+
+
+class FailingEmbeddingService:
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        raise EmbeddingServiceError("embedding backend unavailable")
 
 
 class FakeChromaRepository:
@@ -150,4 +157,14 @@ def test_retrieve_chunks_raises_when_no_relevant_chunks_are_found() -> None:
     )
 
     with pytest.raises(RetrievalNoRelevantChunksError):
+        asyncio.run(service.retrieve_chunks("Any grounded question", top_k=4))
+
+
+def test_retrieve_chunks_wraps_embedding_failures_as_service_errors() -> None:
+    service = RetrievalService(
+        embedding_service=FailingEmbeddingService(),
+        chroma_repository=FakeChromaRepository(count=2, chunks=[build_chunk()]),
+    )
+
+    with pytest.raises(RetrievalServiceError, match="embedding backend unavailable"):
         asyncio.run(service.retrieve_chunks("Any grounded question", top_k=4))

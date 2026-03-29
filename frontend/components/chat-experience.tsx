@@ -84,10 +84,12 @@ export function ChatExperience() {
   }
 
   const shouldShowFullError = Boolean(requestError && !response);
+  const retrievedChunkLabel =
+    response?.retrieved_chunks.length === 1 ? "chunk" : "chunks";
 
   return (
     <div className="space-y-4">
-      <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+      <section className="grid gap-4 2xl:grid-cols-[minmax(340px,0.78fr)_minmax(0,1fr)] 2xl:items-start">
         <SectionCard
           eyebrow="Question controls"
           title="Focus the question and retrieval window."
@@ -110,6 +112,7 @@ export function ChatExperience() {
           eyebrow="Grounded answer"
           title="Review the answer and source traceability."
           description="The model is asked to answer only from the retrieved chunks, and the UI keeps the provenance package visible instead of hiding the retrieval layer."
+          className="2xl:min-h-[760px]"
         >
           {!hasSubmitted ? (
             <EmptyState
@@ -165,16 +168,17 @@ export function ChatExperience() {
           description="This panel shows the retrieved chunk package sent into answer generation, with page numbers, chunk IDs, and source URLs preserved."
         >
           <details
-            className="rounded-[1.6rem] border border-black/10 bg-white/78 p-5"
+            className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 p-5"
             open
           >
             <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
                   Retrieved evidence
                 </p>
-                <h3 className="text-2xl text-slate-900">
-                  {response.retrieved_chunks.length} chunks in the grounded context package
+                <h3 className="text-[1.45rem] text-slate-900">
+                  {response.retrieved_chunks.length} {retrievedChunkLabel} in the grounded context
+                  package
                 </h3>
               </div>
 

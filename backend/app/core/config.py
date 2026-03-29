@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     log_level: str = "INFO"
     api_prefix: str = "/api"
-    allowed_origins: list[str] = ["http://localhost:3000"]
+    allowed_origins: list[str] | str = ["http://localhost:3000"]
 
     data_dir: Path = DEFAULT_DATA_DIR
     raw_pdfs_dir: Path = DEFAULT_DATA_DIR / "raw_pdfs"
@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     cache_dir: Path = DEFAULT_DATA_DIR / "cache"
     chroma_dir: Path = DEFAULT_DATA_DIR / "chroma"
 
-    arxiv_base_url: str = "http://export.arxiv.org/api/query"
+    arxiv_base_url: str = "https://export.arxiv.org/api/query"
     openrouter_api_key: str | None = None
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     openrouter_model: str = "openrouter/free"
@@ -68,6 +68,29 @@ class Settings(BaseSettings):
             normalized = value.strip()
             return normalized or None
         return value
+
+    @field_validator("data_dir", "raw_pdfs_dir", "parsed_dir", "cache_dir", "chroma_dir", mode="before")
+    @classmethod
+    def resolve_repo_relative_paths(cls, value: Any) -> Path | Any:
+        if value is None:
+            return None
+
+        path = value if isinstance(value, Path) else Path(str(value))
+        if path.is_absolute():
+            return path
+        return ROOT_DIR / path
+
+    @model_validator(mode="after")
+    def derive_runtime_subdirectories(self) -> "Settings":
+        if "raw_pdfs_dir" not in self.model_fields_set:
+            self.raw_pdfs_dir = self.data_dir / "raw_pdfs"
+        if "parsed_dir" not in self.model_fields_set:
+            self.parsed_dir = self.data_dir / "parsed"
+        if "cache_dir" not in self.model_fields_set:
+            self.cache_dir = self.data_dir / "cache"
+        if "chroma_dir" not in self.model_fields_set:
+            self.chroma_dir = self.data_dir / "chroma"
+        return self
 
     @field_validator("chunk_size_words")
     @classmethod

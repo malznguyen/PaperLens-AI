@@ -54,7 +54,7 @@ Each workflow follows retrieve --> rerank --> generate --> cite, and every respo
 | Vector DB | Chroma (local, persistent) |
 | LLM | OpenRouter API (configurable model) |
 | PDF parsing | PyMuPDF (fitz) |
-| Testing | pytest (backend), TypeScript strict mode (frontend) |
+| Testing | pytest (backend), TypeScript strict mode, Next.js production build, Playwright smoke tests |
 
 ## Setup and run
 
@@ -77,6 +77,8 @@ Edit `.env` and add your OpenRouter API key:
 ```env
 OPENROUTER_API_KEY=sk-or-v1-your-key-here
 ```
+
+Runtime data stays under `backend/data/` by default. The committed `.gitkeep` files keep the folder structure, but downloaded PDFs, parsed JSON, cache files, and Chroma indexes are generated locally and ignored by Git.
 
 ### 2. Start the backend
 
@@ -126,7 +128,7 @@ This starts both services together.
 | `LOG_LEVEL` | `INFO` | Logging verbosity |
 | `ALLOWED_ORIGINS` | `http://localhost:3000` | CORS origins |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000` | Frontend API target |
-| `ARXIV_BASE_URL` | `http://export.arxiv.org/api/query` | arXiv Atom endpoint |
+| `ARXIV_BASE_URL` | `https://export.arxiv.org/api/query` | arXiv Atom endpoint |
 | `OPENROUTER_API_KEY` | (required) | OpenRouter authentication |
 | `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter endpoint |
 | `OPENROUTER_MODEL` | `openrouter/free` | LLM model identifier |
@@ -136,8 +138,8 @@ This starts both services together.
 | `RETRIEVAL_TOP_K_MAX` | `12` | Maximum retrieval count |
 | `RERANKING_ENABLED` | `true` | Cross-encoder reranking toggle |
 | `RERANKER_MODEL` | `cross-encoder/ms-marco-MiniLM-L6-v2` | Reranker model |
-| `DATA_DIR` | `backend/data` | Root data directory |
-| `CHROMA_DIR` | `backend/data/chroma` | Chroma persistence path |
+| `DATA_DIR` | `backend/data` | Root data directory (relative paths resolve from the repo root) |
+| `CHROMA_DIR` | `backend/data/chroma` | Chroma persistence path (relative paths resolve from the repo root) |
 
 ## Typical user workflow
 
@@ -168,20 +170,62 @@ For a repeatable demo, search for `"attention mechanism transformer"` and ingest
 
 ## Testing
 
-### Backend tests
+### Full validation
+
+Run the whole validation suite from the repository root:
 
 ```bash
-cd backend
-pytest -v
+python scripts/run_all_tests.py
 ```
 
-### Frontend type check and build
+The runner executes, in order:
+
+1. backend pytest suite
+2. frontend typecheck
+3. frontend production build
+4. Playwright browser smoke tests
+
+It stops on the first critical failure and prints clear step labels while it runs.
+
+### Prerequisites for automated tests
+
+- Backend dependencies installed from `backend/requirements.txt`
+- Frontend dependencies installed with `npm install` inside `frontend`
+- Playwright Chromium installed once with:
 
 ```bash
 cd frontend
-npx tsc --noEmit
-npm run build
+npx playwright install chromium
 ```
+
+Automated tests are deterministic and do **not** require live arXiv or OpenRouter access.
+
+### Backend-only commands
+
+```bash
+cd backend
+python -m pytest -q
+```
+
+Run only the API route harness:
+
+```bash
+cd backend
+python -m pytest -q tests/test_api_routes.py
+```
+
+### Frontend-only commands
+
+```bash
+cd frontend
+npm run typecheck
+npm run build
+npm run smoke
+```
+
+The smoke suite starts the built Next.js app on an isolated local port and mocks backend responses for the main workflow screens.
+
+For the full testing guide, see [docs/testing.md](docs/testing.md).
 
 ## Repository structure
 
@@ -200,7 +244,7 @@ paperlens_ai/
       schemas/        # Pydantic request/response models
       repositories/   # Chroma vector DB interface
       utils/          # File, text, prompt, hash utilities
-    data/             # Local storage (PDFs, parsed text, cache, Chroma)
+    data/             # Runtime-generated local storage (.gitkeep only committed)
     tests/            # pytest test suite
   docs/               # Architecture docs, demo script, report outline
   .env.example        # Environment variable template

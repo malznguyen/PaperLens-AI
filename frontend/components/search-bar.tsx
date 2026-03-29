@@ -31,8 +31,8 @@ export function SearchBar({
         >
           Topic query
         </label>
-        <div className="mt-2 flex items-center gap-3 rounded-[1.6rem] border border-black/10 bg-white/85 px-4 py-4 shadow-panel">
-          <div className="rounded-2xl border border-black/10 bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
+        <div className="mt-2 flex items-center gap-3 rounded-[1.6rem] border border-[color:var(--line)] bg-white/88 px-4 py-4 shadow-panel">
+          <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
             <Search className="h-5 w-5" />
           </div>
           <input
@@ -55,14 +55,14 @@ export function SearchBar({
         )}
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <label className="flex flex-col gap-2 text-sm text-[color:var(--muted)]">
           <span className="text-xs uppercase tracking-[0.24em]">Max results</span>
           <select
             name="maxResults"
             value={maxResults}
             onChange={(event) => onMaxResultsChange(Number(event.target.value))}
-            className="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none"
+            className="rounded-2xl border border-[color:var(--line)] bg-white/84 px-4 py-3 text-sm text-slate-900 outline-none"
           >
             {maxResultOptions.map((option) => (
               <option key={option} value={option}>
@@ -91,13 +91,13 @@ export function SearchBar({
         </button>
       </div>
 
-      <div className="rounded-2xl border border-dashed border-[color:var(--accent)]/35 bg-[color:var(--accent-soft)] p-4">
-        <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--accent)]">
+      <div className="rounded-[1.45rem] border border-dashed border-[color:var(--accent)]/30 bg-[color:var(--accent-soft)]/88 p-4">
+        <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--accent)]">
           Next steps
         </p>
         <p className="mt-2 text-sm leading-6 text-slate-800">
-          After reviewing results, click Ingest and Index on promising papers. Then use their
-          IDs in Chat, Compare, or Synthesis for grounded, citable analysis.
+          Review the titles first, then ingest and index only the strongest candidates. The same
+          paper IDs can move directly into Chat, Compare, or Synthesis.
         </p>
       </div>
     </form>

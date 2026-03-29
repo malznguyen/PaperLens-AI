@@ -14,6 +14,7 @@ type IngestButtonProps = {
   paperTitle: string;
   state?: PaperIngestState;
   onIngest: () => void;
+  showStatus?: boolean;
 };
 
 export function IngestButton({
@@ -21,6 +22,7 @@ export function IngestButton({
   paperTitle,
   state,
   onIngest,
+  showStatus = true,
 }: IngestButtonProps) {
   const status = state?.status ?? "idle";
   const isIngesting = status === "ingesting";
@@ -48,7 +50,7 @@ export function IngestButton({
         {buttonLabel}
       </button>
 
-      {statusLabel ? <StatusChip tone={tone}>{statusLabel}</StatusChip> : null}
+      {showStatus && statusLabel ? <StatusChip tone={tone}>{statusLabel}</StatusChip> : null}
     </div>
   );
 }

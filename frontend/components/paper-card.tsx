@@ -2,7 +2,9 @@ import { CalendarDays, ExternalLink, FileText } from "lucide-react";
 
 import { IndexButton, type PaperIndexState } from "@/components/index-button";
 import { IngestButton, type PaperIngestState } from "@/components/ingest-button";
+import { StatusChip } from "@/components/status-chip";
 import type { PaperSearchResult } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -56,33 +58,95 @@ export function PaperCard({
   const detailMessages = [ingestMessage, indexMessage].filter(
     (message): message is string => Boolean(message),
   );
+  const statusItems = getPaperStatusItems(ingestState, indexState, Boolean(paper.pdf_url));
 
   return (
-    <article className="rounded-[1.6rem] border border-black/10 bg-white/78 p-5 shadow-panel">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <article className="rounded-[1.75rem] border border-[color:var(--line)] bg-white/84 p-5 shadow-panel sm:p-6">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center rounded-full border border-[color:var(--line)] bg-[#f6f0e7] px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-slate-700">
+          {paper.primary_category ?? "arXiv record"}
+        </span>
+        <span className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
+          {paper.id}
+        </span>
+      </div>
+
+      <div className="mt-4 space-y-3">
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
-            {paper.primary_category ?? "arXiv record"}
-          </p>
-          <h3 className="mt-2 text-2xl leading-tight text-slate-900">{paper.title}</h3>
-          <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">
+          <h3 className="mt-2 max-w-4xl text-[1.55rem] leading-[1.12] text-slate-900 md:text-[1.8rem]">
+            {paper.title}
+          </h3>
+          <p className="mt-3 max-w-4xl text-sm leading-6 text-[color:var(--muted-strong)]">
             {paper.authors.length > 0 ? paper.authors.join(", ") : "Authors unavailable"}
           </p>
         </div>
+        <p className="max-w-5xl text-sm leading-7 text-slate-700">{abstractSnippet}</p>
+      </div>
 
-        <div className="flex shrink-0 flex-col items-start gap-2 lg:items-end">
-          <div className="flex flex-wrap gap-2 lg:justify-end">
+      <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+        <div className="space-y-4 min-w-0">
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-[#f6f0e7] px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] text-slate-700">
+              <CalendarDays className="h-3.5 w-3.5" />
+              Published {formatDateLabel(paper.published_at)}
+            </span>
+            <span className="inline-flex items-center rounded-full border border-[color:var(--line)] bg-white/84 px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] text-[color:var(--muted)]">
+              Updated {formatDateLabel(paper.updated_at)}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {paper.categories.map((category) => (
+              <span
+                key={`${paper.id}-${category}`}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em]",
+                  category === paper.primary_category
+                    ? "border-[color:var(--accent)]/20 bg-[color:var(--accent-soft)] text-[color:var(--accent)]"
+                    : "border-[color:var(--line)] bg-white/80 text-slate-700",
+                )}
+              >
+                {category}
+              </span>
+            ))}
+          </div>
+
+          {statusItems.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {statusItems.map((item) => (
+                <StatusChip key={item.label} tone={item.tone}>
+                  {item.label}
+                </StatusChip>
+              ))}
+            </div>
+          ) : null}
+
+          {detailMessages.length > 0 ? (
+            <div className="space-y-1.5">
+              {detailMessages.map((message) => (
+                <p key={message} className="text-sm leading-6 text-[color:var(--muted)]">
+                  {message}
+                </p>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+          <div className="flex flex-wrap gap-2 xl:justify-end">
             <IngestButton
               hasPdfUrl={Boolean(paper.pdf_url)}
               paperTitle={paper.title}
               state={ingestState}
               onIngest={() => onIngest(paper)}
+              showStatus={false}
             />
             {shouldShowIndexAction ? (
               <IndexButton
                 paperTitle={paper.title}
                 state={indexState}
                 onIndex={() => onIndex(paper)}
+                showStatus={false}
               />
             ) : null}
             {paper.pdf_url ? (
@@ -90,7 +154,7 @@ export function PaperCard({
                 href={paper.pdf_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white"
+                className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white"
               >
                 <FileText className="h-4 w-4" />
                 PDF
@@ -100,52 +164,70 @@ export function PaperCard({
               href={paper.source_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80"
+              className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80"
             >
               <ExternalLink className="h-4 w-4" />
               Source
             </a>
           </div>
-
-          {detailMessages.map((message) => (
-            <p
-              key={message}
-              className="max-w-sm text-sm leading-6 text-[color:var(--muted)] lg:text-right"
-            >
-              {message}
-            </p>
-          ))}
         </div>
       </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[#f6f0e7] px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-slate-700">
-          <CalendarDays className="h-3.5 w-3.5" />
-          Published {formatDateLabel(paper.published_at)}
-        </span>
-        <span className="inline-flex items-center rounded-full border border-black/10 bg-white/80 px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
-          Updated {formatDateLabel(paper.updated_at)}
-        </span>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {paper.categories.map((category) => (
-          <span
-            key={`${paper.id}-${category}`}
-            className={`rounded-full border px-3 py-1.5 text-xs font-medium uppercase tracking-[0.18em] ${
-              category === paper.primary_category
-                ? "border-[color:var(--accent)]/20 bg-[color:var(--accent-soft)] text-[color:var(--accent)]"
-                : "border-black/10 bg-white/80 text-slate-700"
-            }`}
-          >
-            {category}
-          </span>
-        ))}
-      </div>
-
-      <p className="mt-4 text-sm leading-7 text-slate-700">{abstractSnippet}</p>
     </article>
   );
+}
+
+function getPaperStatusItems(
+  ingestState: PaperIngestState | undefined,
+  indexState: PaperIndexState | undefined,
+  hasPdfUrl: boolean,
+): Array<{
+  label: string;
+  tone: "neutral" | "positive" | "warning";
+}> {
+  const items: Array<{
+    label: string;
+    tone: "neutral" | "positive" | "warning";
+  }> = [];
+
+  if (!hasPdfUrl) {
+    items.push({ label: "No PDF", tone: "warning" });
+  }
+
+  switch (ingestState?.status) {
+    case "ingesting":
+      items.push({ label: "Ingesting", tone: "warning" });
+      break;
+    case "completed":
+      items.push({ label: "Parsed locally", tone: "positive" });
+      break;
+    case "cached":
+      items.push({ label: "Cached locally", tone: "positive" });
+      break;
+    case "failed":
+      items.push({ label: "Ingest failed", tone: "warning" });
+      break;
+    default:
+      break;
+  }
+
+  switch (indexState?.status) {
+    case "indexing":
+      items.push({ label: "Indexing", tone: "warning" });
+      break;
+    case "indexed":
+      items.push({ label: "Indexed", tone: "positive" });
+      break;
+    case "cached":
+      items.push({ label: "Index cached", tone: "positive" });
+      break;
+    case "failed":
+      items.push({ label: "Index failed", tone: "warning" });
+      break;
+    default:
+      break;
+  }
+
+  return items;
 }
 
 function formatIngestMessage(

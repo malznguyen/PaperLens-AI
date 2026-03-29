@@ -75,6 +75,39 @@ export type IndexPaperResponse = {
   message: string;
 };
 
+export type WorkspacePaperStatus = {
+  ingested: boolean;
+  indexed: boolean;
+};
+
+export type WorkspaceSummary = {
+  total_paper_count: number;
+  ingested_paper_count: number;
+  indexed_paper_count: number;
+  total_chunk_count: number;
+};
+
+export type WorkspacePaper = {
+  paper_id: string;
+  title: string;
+  authors: string[];
+  categories: string[];
+  primary_category: string | null;
+  status: WorkspacePaperStatus;
+  pdf_path: string | null;
+  parsed_path: string | null;
+  page_count: number;
+  word_count: number;
+  chunk_count: number;
+  source_url: string | null;
+  collection_name: string | null;
+};
+
+export type WorkspaceResponse = {
+  summary: WorkspaceSummary;
+  papers: WorkspacePaper[];
+};
+
 export type ChatCitation = {
   label: string;
   paper_id: string;
@@ -179,6 +212,7 @@ export const apiRoutes = {
   searchPapers: "/api/search-papers",
   ingest: "/api/ingest",
   indexPaper: "/api/index-paper",
+  workspace: "/api/workspace",
   chat: "/api/chat",
   compare: "/api/compare",
   summarizeTopic: "/api/summarize-topic",
@@ -234,6 +268,19 @@ export async function indexPaper(
 
   await ensureSuccessfulResponse(response, "Unable to index this paper right now.");
   return (await response.json()) as IndexPaperResponse;
+}
+
+export async function fetchWorkspace(): Promise<WorkspaceResponse> {
+  const response = await fetch(buildApiUrl(apiRoutes.workspace), {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  await ensureSuccessfulResponse(
+    response,
+    "Unable to load the current workspace state right now.",
+  );
+  return (await response.json()) as WorkspaceResponse;
 }
 
 export async function researchChat(

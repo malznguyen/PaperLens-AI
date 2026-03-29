@@ -32,6 +32,8 @@ export function TopicSynthesisExperience() {
   const [inputError, setInputError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const retrievedChunkLabel =
+    response?.retrieved_chunks.length === 1 ? "chunk" : "chunks";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -67,7 +69,7 @@ export function TopicSynthesisExperience() {
 
   return (
     <div className="space-y-4">
-      <section className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+      <section className="grid gap-4 2xl:grid-cols-[minmax(340px,0.76fr)_minmax(0,1fr)] 2xl:items-start">
         <SectionCard
           eyebrow="Synthesis controls"
           title="Generate a grounded topic overview across indexed evidence."
@@ -78,9 +80,9 @@ export function TopicSynthesisExperience() {
               <span className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
                 Topic (optional if paper IDs are provided)
               </span>
-              <div className="mt-2 rounded-[1.8rem] border border-black/10 bg-white/85 p-4 shadow-panel">
+              <div className="mt-2 rounded-[1.8rem] border border-[color:var(--line)] bg-white/88 p-4 shadow-panel">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-2xl border border-black/10 bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
+                  <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
                     <BookMarked className="h-5 w-5" />
                   </div>
                   <textarea
@@ -120,9 +122,9 @@ export function TopicSynthesisExperience() {
               </p>
             )}
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div className="rounded-2xl border border-dashed border-[color:var(--accent)]/35 bg-[color:var(--accent-soft)] p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--accent)]">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-xl rounded-[1.45rem] border border-dashed border-[color:var(--accent)]/30 bg-[color:var(--accent-soft)]/88 p-4">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--accent)]">
                   Literature review mode
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-800">
@@ -155,6 +157,7 @@ export function TopicSynthesisExperience() {
           eyebrow="Literature overview"
           title="Read the overview, trends, and grounded follow-on ideas."
           description="This output is designed for literature-review style work: concise overview first, then structured lists for recurring themes and supported gaps."
+          className="2xl:min-h-[820px]"
         >
           {!hasSubmitted ? (
             <EmptyState
@@ -195,13 +198,13 @@ export function TopicSynthesisExperience() {
                 />
               ) : null}
 
-              <div className="rounded-[1.6rem] border border-black/10 bg-white/78 p-5">
+              <div className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
                       Topic overview
                     </p>
-                    <h3 className="mt-2 text-2xl text-slate-900">{response.topic}</h3>
+                    <h3 className="mt-2 text-[1.45rem] text-slate-900">{response.topic}</h3>
                   </div>
 
                   <StatusChip tone={response.status === "completed" ? "positive" : "warning"}>
@@ -239,16 +242,16 @@ export function TopicSynthesisExperience() {
           description="The synthesis response exposes the retrieved chunk package so claims about trends, challenges, or gaps can be traced back to specific paper pages."
         >
           <details
-            className="rounded-[1.6rem] border border-black/10 bg-white/78 p-5"
+            className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 p-5"
             open
           >
             <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
                   Retrieved evidence
                 </p>
-                <h3 className="text-2xl text-slate-900">
-                  {response.retrieved_chunks.length} chunks in the synthesis package
+                <h3 className="text-[1.45rem] text-slate-900">
+                  {response.retrieved_chunks.length} {retrievedChunkLabel} in the synthesis package
                 </h3>
               </div>
 
@@ -286,15 +289,19 @@ type ListPanelProps = {
 
 function ListPanel({ title, items, className }: ListPanelProps) {
   return (
-    <div className={`rounded-[1.6rem] border border-black/10 bg-white/78 p-5 ${className ?? ""}`}>
-      <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">{title}</p>
+    <div
+      className={`rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 p-5 ${className ?? ""}`}
+    >
+      <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
+        {title}
+      </p>
 
       {items.length > 0 ? (
         <div className="mt-4 space-y-3">
           {items.map((item) => (
             <div
               key={`${title}-${item}`}
-              className="rounded-2xl border border-black/10 bg-[#f6f0e7] px-4 py-4"
+              className="rounded-2xl border border-[color:var(--line)] bg-[#f6f0e7] px-4 py-4"
             >
               <p className="text-sm leading-6 text-slate-800">{item}</p>
             </div>

@@ -1,1 +1,1 @@
-"""Route modules for Phase 1 endpoints."""
+"""API route modules for PaperLens AI workflows."""

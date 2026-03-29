@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -12,3 +14,5 @@ def test_health_endpoint() -> None:
     payload = response.json()
     assert payload["status"] == "ok"
     assert payload["service"] == "PaperLens AI API"
+    assert payload["environment"] == "development"
+    assert isinstance(datetime.fromisoformat(payload["timestamp"].replace("Z", "+00:00")), datetime)

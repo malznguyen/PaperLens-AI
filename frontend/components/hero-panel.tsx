@@ -23,11 +23,11 @@ const metrics = [
 
 export function HeroPanel() {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-black/10 bg-[color:var(--panel)] shadow-panel">
-      <div className="grid gap-6 px-6 py-8 md:px-8 md:py-10 xl:grid-cols-[1.35fr_0.85fr]">
+    <section className="overflow-hidden rounded-[2rem] border border-[color:var(--line)] bg-[color:var(--panel)] shadow-panel">
+      <div className="grid gap-6 px-6 py-8 md:px-8 md:py-10 xl:grid-cols-[1.3fr_0.85fr]">
         <div>
           <StatusChip tone="neutral">Grounded research assistant</StatusChip>
-          <h1 className="mt-5 max-w-3xl text-3xl leading-tight text-slate-950 md:text-4xl">
+          <h1 className="mt-5 max-w-3xl text-[2.5rem] leading-[1.05] text-slate-950 md:text-[3.15rem]">
             Search, ingest, index, and analyze academic papers with full citation traceability.
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--muted)] md:text-base">
@@ -44,7 +44,7 @@ export function HeroPanel() {
             </Link>
             <Link
               href="/workspace"
-              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-white"
+              className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-white/82 px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-white"
             >
               View paper workspace
             </Link>
@@ -58,16 +58,16 @@ export function HeroPanel() {
             return (
               <div
                 key={metric.label}
-                className="rounded-3xl border border-black/10 bg-white/78 px-5 py-5"
+                className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 px-5 py-5"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.22em] text-[color:var(--muted)]">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-[color:var(--muted)]">
                       {metric.label}
                     </p>
-                    <p className="mt-3 text-2xl text-slate-950">{metric.value}</p>
+                    <p className="mt-3 text-[1.65rem] text-slate-950">{metric.value}</p>
                   </div>
-                  <div className="rounded-2xl border border-black/10 bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
+                  <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
                     <Icon className="h-5 w-5" />
                   </div>
                 </div>

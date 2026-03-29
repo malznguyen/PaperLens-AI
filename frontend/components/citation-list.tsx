@@ -19,16 +19,16 @@ export function CitationList({ citations }: CitationListProps) {
   }
 
   return (
-    <div className="rounded-[1.6rem] border border-black/10 bg-white/78 p-5">
+    <div className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 p-5">
       <div className="flex items-center gap-3">
-        <div className="rounded-2xl border border-black/10 bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
+        <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
           <Quote className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
+          <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
             Citations
           </p>
-          <h3 className="text-2xl text-slate-900">Trace the answer back to paper pages.</h3>
+          <h3 className="text-[1.45rem] text-slate-900">Trace the answer back to paper pages.</h3>
         </div>
       </div>
 
@@ -39,19 +39,24 @@ export function CitationList({ citations }: CitationListProps) {
             href={citation.source_url}
             target="_blank"
             rel="noreferrer"
-            className="flex items-start justify-between gap-4 rounded-2xl border border-black/10 bg-[#f6f0e7] px-4 py-4 transition hover:border-[color:var(--accent)]/40 hover:bg-[#f2ebe0]"
+            className="grid gap-3 rounded-[1.35rem] border border-[color:var(--line)] bg-[#f6f0e7] px-4 py-4 transition hover:border-[color:var(--accent)]/40 hover:bg-[#f2ebe0] md:grid-cols-[minmax(0,1fr)_auto] md:items-start"
           >
             <div className="min-w-0">
-              <p className="text-xs uppercase tracking-[0.22em] text-[color:var(--muted)]">
-                [{citation.label}] {citation.paper_id}
-              </p>
-              <p className="mt-2 text-base text-slate-900">{citation.paper_title}</p>
-              <p className="mt-1 text-sm text-[color:var(--muted)]">
-                Page {citation.page_number} - chunk {citation.chunk_id}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-[color:var(--line)] bg-white/78 px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-slate-700">
+                  {citation.label}
+                </span>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
+                  {citation.paper_id}
+                </p>
+              </div>
+              <p className="mt-3 text-base leading-6 text-slate-900">{citation.paper_title}</p>
+              <p className="mt-2 break-all text-sm leading-6 text-[color:var(--muted)]">
+                Page {citation.page_number} | chunk {citation.chunk_id}
               </p>
             </div>
 
-            <div className="shrink-0 rounded-2xl border border-black/10 bg-white/80 p-2 text-[color:var(--accent)]">
+            <div className="shrink-0 rounded-2xl border border-[color:var(--line)] bg-white/82 p-2 text-[color:var(--accent)]">
               <ArrowUpRight className="h-4 w-4" />
             </div>
           </a>

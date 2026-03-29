@@ -37,9 +37,9 @@ export function ChatInput({
         >
           Research question
         </label>
-        <div className="mt-2 rounded-[1.8rem] border border-black/10 bg-white/85 p-4 shadow-panel">
+        <div className="mt-2 rounded-[1.8rem] border border-[color:var(--line)] bg-white/88 p-4 shadow-panel">
           <div className="flex items-start gap-3">
-            <div className="rounded-2xl border border-black/10 bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
+            <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
               <MessageSquareText className="h-5 w-5" />
             </div>
             <textarea
@@ -61,7 +61,7 @@ export function ChatInput({
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
         <div>
           <PaperIdInput
             value={paperIdsInput}
@@ -78,7 +78,7 @@ export function ChatInput({
             name="topK"
             value={topK}
             onChange={(event) => onTopKChange(Number(event.target.value))}
-            className="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none"
+            className="rounded-2xl border border-[color:var(--line)] bg-white/84 px-4 py-3 text-sm text-slate-900 outline-none"
           >
             {topKOptions.map((option) => (
               <option key={option} value={option}>
@@ -89,13 +89,14 @@ export function ChatInput({
         </label>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="rounded-2xl border border-dashed border-[color:var(--accent)]/35 bg-[color:var(--accent-soft)] p-4">
-          <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--accent)]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="max-w-xl rounded-[1.45rem] border border-dashed border-[color:var(--accent)]/30 bg-[color:var(--accent-soft)]/88 p-4">
+          <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--accent)]">
             Grounding rule
           </p>
           <p className="mt-2 text-sm leading-6 text-slate-800">
-            Papers must already be indexed from the Search page. The answer layer only sees retrieved evidence, not the whole corpus.
+            Questions only run over indexed papers. The answer layer sees retrieved evidence rather
+            than the entire corpus.
           </p>
         </div>
 

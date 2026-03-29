@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 import chromadb
@@ -12,6 +13,15 @@ from app.schemas.indexing import IndexedChunk
 
 class ChromaRepositoryError(RuntimeError):
     """Raised when Chroma operations fail."""
+
+
+@dataclass(frozen=True)
+class IndexedPaperSnapshot:
+    paper_id: str
+    paper_title: str | None
+    source_url: str | None
+    pdf_path: str | None
+    chunk_count: int
 
 
 class ChromaRepository:
@@ -99,6 +109,55 @@ class ChromaRepository:
             raise ChromaRepositoryError("Failed to query indexed chunks from Chroma.") from exc
 
         return self._build_retrieved_chunks(result)
+
+    def list_indexed_papers(self) -> list[IndexedPaperSnapshot]:
+        collection = self._get_collection()
+
+        try:
+            result = collection.get(include=["metadatas"])
+        except Exception as exc:
+            raise ChromaRepositoryError("Failed to inspect indexed papers in Chroma.") from exc
+
+        metadatas = result.get("metadatas") or []
+        snapshots: dict[str, IndexedPaperSnapshot] = {}
+
+        for metadata in metadatas:
+            if not isinstance(metadata, dict):
+                continue
+
+            paper_id = metadata.get("paper_id")
+            if not isinstance(paper_id, str) or not paper_id.strip():
+                continue
+
+            normalized_paper_id = paper_id.strip()
+            current = snapshots.get(normalized_paper_id)
+            chunk_count = 1 if current is None else current.chunk_count + 1
+
+            paper_title = metadata.get("paper_title")
+            source_url = metadata.get("source_url")
+            pdf_path = metadata.get("pdf_path")
+
+            snapshots[normalized_paper_id] = IndexedPaperSnapshot(
+                paper_id=normalized_paper_id,
+                paper_title=(
+                    str(paper_title)
+                    if isinstance(paper_title, str)
+                    else current.paper_title if current else None
+                ),
+                source_url=(
+                    str(source_url)
+                    if isinstance(source_url, str)
+                    else current.source_url if current else None
+                ),
+                pdf_path=(
+                    str(pdf_path)
+                    if isinstance(pdf_path, str)
+                    else current.pdf_path if current else None
+                ),
+                chunk_count=chunk_count,
+            )
+
+        return list(snapshots.values())
 
     def _get_collection(self):
         if self._collection is None:

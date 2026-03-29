@@ -1,9 +1,0 @@
-# Phase 6 Design - Compare, Topic Synthesis, and Evaluation Hooks
-
-Phase 6 extends the Phase 5 retrieval-first architecture without replacing it. The main design choice is to keep the same layering already used elsewhere in the repo: request validation in service modules, orchestration in workflow modules, and shared retrieval, reranking, citation, and generation utilities underneath. That keeps the compare and synthesis flows modular, easy to test, and aligned with `docs/Agent.md` and `docs/System_overview.md`.
-
-The compare workflow retrieves evidence per selected paper rather than using a single pooled retrieval call. This preserves representation for every requested paper, allows explicit rejection of unindexed papers or papers without usable evidence, and supports a structured comparison table that stays grounded in retrieved chunks. The synthesis workflow is lighter: it uses topic-driven retrieval over either all indexed papers or an optional paper subset, then asks for a literature-review style output with themes, trends, supported challenges, and evidence-backed gaps.
-
-Evaluation support is intentionally simple. A lightweight tracker records retrieval, reranking, generation, and total workflow latency, plus retrieved chunk and citation counts. The tracker returns a `meta` object in chat, compare, and synthesis responses, which makes the system easier to debug and gives the coursework report a stable place to source screenshots and metrics.
-
-Failure handling follows the Phase 5 precedent. If generation fails after evidence retrieval, the API returns a partial response with citations, retrieved chunks, and timing metadata intact instead of hiding the grounding layer. That keeps provenance visible and makes the workflows demo-friendly even under upstream model instability.

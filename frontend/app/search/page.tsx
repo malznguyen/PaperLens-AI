@@ -42,7 +42,7 @@ export default function SearchPage() {
           {searchHighlights.map((highlight) => (
             <div
               key={highlight.label}
-              className="rounded-2xl border border-black/10 bg-white/75 px-4 py-4"
+              className="rounded-[1.45rem] border border-[color:var(--line)] bg-white/82 px-4 py-4"
             >
               <p className="text-xs uppercase tracking-[0.22em] text-[color:var(--muted)]">
                 {highlight.label}

@@ -168,7 +168,7 @@ export function SearchExperience() {
   }
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+    <section className="grid gap-4 2xl:grid-cols-[minmax(340px,0.72fr)_minmax(0,1fr)] 2xl:items-start">
       <SectionCard
         eyebrow="Search controls"
         title="Run a topic search against arXiv."
@@ -189,6 +189,7 @@ export function SearchExperience() {
         eyebrow="Search results"
         title="Review papers in a source-first list."
         description="Results keep arXiv provenance visible so the workflow stays grounded from discovery onward."
+        className="2xl:min-h-[640px]"
       >
         <SearchResults
           results={results}

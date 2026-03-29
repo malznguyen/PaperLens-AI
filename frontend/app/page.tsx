@@ -81,7 +81,7 @@ export default function HomePage() {
             {pipelineModules.map((item) => (
               <div
                 key={item.label}
-                className="flex items-center justify-between rounded-2xl border border-black/10 bg-white/70 px-4 py-3"
+                className="flex items-center justify-between gap-3 rounded-[1.45rem] border border-[color:var(--line)] bg-white/80 px-4 py-3"
               >
                 <p className="text-sm font-medium text-slate-900">{item.label}</p>
                 <StatusChip tone={item.ready ? "positive" : "neutral"}>
@@ -103,7 +103,7 @@ export default function HomePage() {
             {quickStart.map((item) => (
               <div
                 key={item.step}
-                className="rounded-2xl border border-black/10 bg-white/75 px-4 py-4"
+                className="rounded-[1.45rem] border border-[color:var(--line)] bg-white/82 px-4 py-4"
               >
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-lg text-slate-900">{item.title}</h3>
@@ -123,7 +123,7 @@ export default function HomePage() {
           description="Paper metadata, retrieved chunks, and citation snippets each have a dedicated home in the UI."
         >
           <div className="space-y-4">
-            <div className="rounded-2xl border border-dashed border-[color:var(--accent)]/35 bg-[color:var(--accent-soft)] p-4">
+            <div className="rounded-[1.45rem] border border-dashed border-[color:var(--accent)]/30 bg-[color:var(--accent-soft)]/88 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--accent)]">
                 Evidence model
               </p>
@@ -134,7 +134,7 @@ export default function HomePage() {
                 <li>Workflow metrics: retrieval, reranking, and generation timing</li>
               </ul>
             </div>
-            <div className="rounded-2xl border border-black/10 bg-white/70 p-4">
+            <div className="rounded-[1.45rem] border border-[color:var(--line)] bg-white/80 p-4">
               <p className="text-sm font-medium text-slate-900">Grounding guarantee</p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
                 The model is instructed to answer only from retrieved evidence. If a field is not

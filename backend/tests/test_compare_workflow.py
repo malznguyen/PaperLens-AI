@@ -4,9 +4,10 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.schemas.chat import RetrievedChunk
-from app.schemas.compare import CompareRequest, CompareResponse
+from app.schemas.compare import CompareRequest, CompareResponse, MISSING_EVIDENCE_TEXT
 from app.services.compare_service import get_compare_service
 from app.services.generation_service import GenerationUpstreamError
+from app.services.reranking_service import RerankingServiceError
 from app.services.retrieval_service import RetrievalNoRelevantChunksError
 from app.workflows.compare_workflow import (
     CompareWorkflow,
@@ -49,8 +50,9 @@ class StubCompareRetrievalService:
 
 
 class StubRerankingService:
-    def __init__(self, *, enabled: bool = False) -> None:
+    def __init__(self, *, enabled: bool = False, should_fail: bool = False) -> None:
         self.enabled = enabled
+        self.should_fail = should_fail
 
     async def rerank_chunks(
         self,
@@ -59,6 +61,8 @@ class StubRerankingService:
         *,
         top_k: int,
     ) -> list[RetrievedChunk]:
+        if self.should_fail:
+            raise RerankingServiceError("reranker unavailable")
         return chunks[:top_k]
 
 
@@ -255,10 +259,105 @@ def test_compare_workflow_returns_partial_response_when_generation_fails() -> No
     assert response.status == "partial"
     assert response.summary is None
     assert len(response.comparison_table) == 2
+    assert response.comparison_table[0].paper_title == "Paper 2401.12345"
+    assert response.comparison_table[0].objective == MISSING_EVIDENCE_TEXT
+    assert response.comparison_table[1].paper_title == "Paper 2402.67890"
+    assert response.comparison_table[1].key_contribution == MISSING_EVIDENCE_TEXT
     assert response.citations[0].chunk_id == "2401.12345-p1-c1"
     assert response.retrieved_chunks[1].paper_id == "2402.67890"
     assert response.meta is not None
     assert response.meta.status == "partial"
+    assert response.message == "Evidence retrieved, but comparison generation failed."
+
+
+def test_compare_workflow_falls_back_to_retrieval_order_when_reranker_fails() -> None:
+    settings = Settings(
+        reranking_enabled=True,
+        compare_top_k_per_paper=1,
+        retrieval_top_k_max=6,
+        enable_metrics_collection=True,
+    )
+    workflow = CompareWorkflow(
+        retrieval_service=StubCompareRetrievalService(
+            {
+                "2401.12345": [
+                    build_chunk(
+                        chunk_id="2401.12345-p1-c1",
+                        paper_id="2401.12345",
+                        page_number=1,
+                        text="First retrieved chunk for the first paper.",
+                    ),
+                    build_chunk(
+                        chunk_id="2401.12345-p2-c1",
+                        paper_id="2401.12345",
+                        page_number=2,
+                        text="Second retrieved chunk for the first paper.",
+                    ),
+                ],
+                "2402.67890": [
+                    build_chunk(
+                        chunk_id="2402.67890-p3-c1",
+                        paper_id="2402.67890",
+                        page_number=3,
+                        text="First retrieved chunk for the second paper.",
+                    ),
+                    build_chunk(
+                        chunk_id="2402.67890-p4-c1",
+                        paper_id="2402.67890",
+                        page_number=4,
+                        text="Second retrieved chunk for the second paper.",
+                    ),
+                ],
+            }
+        ),
+        reranking_service=StubRerankingService(enabled=True, should_fail=True),
+        generation_service=StubStructuredGenerationService(
+            payload={
+                "summary": "Fallback uses the original retrieval order safely.",
+                "comparison_table": [
+                    {
+                        "paper_id": "2401.12345",
+                        "paper_title": "Paper 2401.12345",
+                        "objective": "Objective A.",
+                        "methodology": "Method A.",
+                        "dataset": "Dataset A.",
+                        "strengths": "Strength A.",
+                        "limitations": "Limitation A.",
+                        "key_contribution": "Contribution A.",
+                    },
+                    {
+                        "paper_id": "2402.67890",
+                        "paper_title": "Paper 2402.67890",
+                        "objective": "Objective B.",
+                        "methodology": "Method B.",
+                        "dataset": "Dataset B.",
+                        "strengths": "Strength B.",
+                        "limitations": "Limitation B.",
+                        "key_contribution": "Contribution B.",
+                    },
+                ],
+                "citations": ["S1", "S2"],
+                "insufficient_evidence": False,
+            }
+        ),
+        chroma_repository=FakeChromaRepository({"2401.12345": 2, "2402.67890": 2}),
+        settings=settings,
+    )
+
+    response = asyncio.run(
+        workflow.compare_papers(
+            CompareRequest(
+                paper_ids=["2401.12345", "2402.67890"],
+                question="Does reranking failure preserve the original per-paper evidence order?",
+            )
+        )
+    )
+
+    assert response.status == "completed"
+    assert response.retrieved_chunks[0].chunk_id == "2401.12345-p1-c1"
+    assert response.retrieved_chunks[1].chunk_id == "2402.67890-p3-c1"
+    assert response.citations[0].chunk_id == "2401.12345-p1-c1"
+    assert response.citations[1].chunk_id == "2402.67890-p3-c1"
 
 
 def test_compare_workflow_rejects_unindexed_papers() -> None:

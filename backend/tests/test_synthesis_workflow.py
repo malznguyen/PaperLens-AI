@@ -7,6 +7,7 @@ from app.main import app
 from app.schemas.chat import RetrievedChunk
 from app.schemas.synthesis import TopicSynthesisRequest, TopicSynthesisResponse
 from app.services.generation_service import GenerationUpstreamError
+from app.services.reranking_service import RerankingServiceError
 from app.services.synthesis_service import get_synthesis_service
 from app.workflows.synthesis_workflow import (
     SynthesisWorkflow,
@@ -37,8 +38,9 @@ class StubSynthesisRetrievalService:
 
 
 class StubRerankingService:
-    def __init__(self, *, enabled: bool = False) -> None:
+    def __init__(self, *, enabled: bool = False, should_fail: bool = False) -> None:
         self.enabled = enabled
+        self.should_fail = should_fail
 
     async def rerank_chunks(
         self,
@@ -47,6 +49,8 @@ class StubRerankingService:
         *,
         top_k: int,
     ) -> list[RetrievedChunk]:
+        if self.should_fail:
+            raise RerankingServiceError("reranker unavailable")
         return chunks[:top_k]
 
 
@@ -217,9 +221,68 @@ def test_synthesis_workflow_returns_partial_response_when_generation_fails() -> 
 
     assert response.status == "partial"
     assert response.overview is None
+    assert response.topic == "Selected indexed papers"
     assert response.citations[0].chunk_id == "2401.12345-p2-c1"
     assert response.meta is not None
     assert response.meta.status == "partial"
+    assert response.message == "Evidence retrieved, but topic synthesis generation failed."
+
+
+def test_synthesis_workflow_falls_back_to_retrieval_order_when_reranker_fails() -> None:
+    workflow = SynthesisWorkflow(
+        retrieval_service=StubSynthesisRetrievalService(
+            [
+                build_chunk(
+                    chunk_id="2401.12345-p1-c1",
+                    paper_id="2401.12345",
+                    page_number=1,
+                    text="First retrieved chunk for synthesis fallback.",
+                ),
+                build_chunk(
+                    chunk_id="2402.67890-p2-c1",
+                    paper_id="2402.67890",
+                    page_number=2,
+                    text="Second retrieved chunk for synthesis fallback.",
+                ),
+            ]
+        ),
+        reranking_service=StubRerankingService(enabled=True, should_fail=True),
+        generation_service=StubStructuredGenerationService(
+            payload={
+                "topic": "Medical transformer synthesis",
+                "overview": "Fallback keeps the original retrieval ordering.",
+                "themes": ["Theme A"],
+                "trends": ["Trend A"],
+                "open_challenges": ["Challenge A"],
+                "research_gaps": ["Gap A"],
+                "future_directions": ["Direction A"],
+                "citations": ["S1", "S2"],
+                "insufficient_evidence": False,
+            }
+        ),
+        chroma_repository=FakeChromaRepository({"2401.12345": 2, "2402.67890": 2}),
+        settings=Settings(
+            reranking_enabled=True,
+            synthesis_top_k=2,
+            retrieval_top_k_max=6,
+            enable_metrics_collection=True,
+        ),
+    )
+
+    response = asyncio.run(
+        workflow.summarize_topic(
+            TopicSynthesisRequest(
+                topic="Medical transformer synthesis",
+                paper_ids=["2401.12345", "2402.67890"],
+            )
+        )
+    )
+
+    assert response.status == "completed"
+    assert response.retrieved_chunks[0].chunk_id == "2401.12345-p1-c1"
+    assert response.retrieved_chunks[1].chunk_id == "2402.67890-p2-c1"
+    assert response.citations[0].chunk_id == "2401.12345-p1-c1"
+    assert response.citations[1].chunk_id == "2402.67890-p2-c1"
 
 
 def test_synthesis_workflow_rejects_unindexed_papers() -> None:

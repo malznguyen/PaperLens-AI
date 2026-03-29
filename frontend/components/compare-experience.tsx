@@ -36,6 +36,8 @@ export function CompareExperience() {
   const [inputError, setInputError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const retrievedChunkLabel =
+    response?.retrieved_chunks.length === 1 ? "chunk" : "chunks";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -71,7 +73,7 @@ export function CompareExperience() {
 
   return (
     <div className="space-y-4">
-      <section className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+      <section className="grid gap-4 2xl:grid-cols-[minmax(340px,0.76fr)_minmax(0,1fr)] 2xl:items-start">
         <SectionCard
           eyebrow="Compare controls"
           title="Align 2 to 5 indexed papers against the same criteria."
@@ -95,9 +97,9 @@ export function CompareExperience() {
               <span className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
                 Comparison prompt
               </span>
-              <div className="mt-2 rounded-[1.8rem] border border-black/10 bg-white/85 p-4 shadow-panel">
+              <div className="mt-2 rounded-[1.8rem] border border-[color:var(--line)] bg-white/88 p-4 shadow-panel">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-2xl border border-black/10 bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
+                  <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
                     <Scale className="h-5 w-5" />
                   </div>
                   <textarea
@@ -119,9 +121,9 @@ export function CompareExperience() {
               </p>
             )}
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div className="rounded-2xl border border-dashed border-[color:var(--accent)]/35 bg-[color:var(--accent-soft)] p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--accent)]">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-xl rounded-[1.45rem] border border-dashed border-[color:var(--accent)]/30 bg-[color:var(--accent-soft)]/88 p-4">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--accent)]">
                   Grounding rule
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-800">
@@ -154,6 +156,7 @@ export function CompareExperience() {
           eyebrow="Structured output"
           title="Review the grounded summary and row-by-row comparison."
           description="The result keeps the narrative summary, comparison table, citations, and evidence package together so you can inspect what the model actually saw."
+          className="2xl:min-h-[840px]"
         >
           {!hasSubmitted ? (
             <EmptyState
@@ -194,13 +197,13 @@ export function CompareExperience() {
                 />
               ) : null}
 
-              <div className="rounded-[1.6rem] border border-black/10 bg-white/78 p-5">
+              <div className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
                       Comparison summary
                     </p>
-                    <h3 className="mt-2 text-2xl text-slate-900">
+                    <h3 className="mt-2 text-[1.45rem] text-slate-900">
                       Structured answer over selected papers
                     </h3>
                   </div>
@@ -232,16 +235,17 @@ export function CompareExperience() {
           description="Each chunk stays linked to its paper ID, page number, and source URL so the comparison can be audited instead of taken on faith."
         >
           <details
-            className="rounded-[1.6rem] border border-black/10 bg-white/78 p-5"
+            className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 p-5"
             open
           >
             <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted)]">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
                   Retrieved evidence
                 </p>
-                <h3 className="text-2xl text-slate-900">
-                  {response.retrieved_chunks.length} chunks in the comparison package
+                <h3 className="text-[1.45rem] text-slate-900">
+                  {response.retrieved_chunks.length} {retrievedChunkLabel} in the comparison
+                  package
                 </h3>
               </div>
 

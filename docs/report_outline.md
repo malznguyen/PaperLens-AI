@@ -43,7 +43,7 @@
 
 ### Stage 1: Foundation and search integration
 
-- FastAPI scaffold with modular routing and configuration management
+- FastAPI backend foundation with modular routing and configuration management
 - Next.js dashboard shell with responsive research workspace layout
 - arXiv Atom API integration with metadata normalization
 - Search UI with paper cards displaying provenance (authors, categories, source links)

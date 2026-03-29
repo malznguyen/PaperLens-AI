@@ -13,9 +13,15 @@ type IndexButtonProps = {
   paperTitle: string;
   state?: PaperIndexState;
   onIndex: () => void;
+  showStatus?: boolean;
 };
 
-export function IndexButton({ paperTitle, state, onIndex }: IndexButtonProps) {
+export function IndexButton({
+  paperTitle,
+  state,
+  onIndex,
+  showStatus = true,
+}: IndexButtonProps) {
   const status = state?.status ?? "idle";
   const isIndexing = status === "indexing";
   const buttonLabel = getButtonLabel(status);
@@ -41,7 +47,7 @@ export function IndexButton({ paperTitle, state, onIndex }: IndexButtonProps) {
         {buttonLabel}
       </button>
 
-      {statusLabel ? <StatusChip tone={tone}>{statusLabel}</StatusChip> : null}
+      {showStatus && statusLabel ? <StatusChip tone={tone}>{statusLabel}</StatusChip> : null}
     </div>
   );
 }
