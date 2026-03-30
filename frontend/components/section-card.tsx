@@ -26,7 +26,9 @@ export function SectionCard({
         <p className="text-[11px] uppercase tracking-[0.28em] text-[color:var(--muted)]">
           {eyebrow}
         </p>
-        <h2 className="max-w-4xl text-[1.95rem] text-slate-900 sm:text-[2.15rem]">{title}</h2>
+        <h2 className="max-w-4xl text-pretty text-[1.72rem] leading-tight text-slate-900 sm:text-[1.95rem] lg:text-[2.15rem]">
+          {title}
+        </h2>
         <p className="max-w-3xl text-sm leading-6 text-[color:var(--muted-strong)]">
           {description}
         </p>

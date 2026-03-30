@@ -23,7 +23,7 @@ export function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex gap-2 overflow-x-auto px-4 pb-4 md:flex-1 md:flex-col md:px-5">
+      <nav className="grid grid-cols-2 gap-2 px-4 pb-4 md:flex md:flex-1 md:flex-col md:px-5">
         {navigationItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -33,7 +33,7 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "min-w-[180px] rounded-[1.2rem] border px-3.5 py-3 transition md:min-w-0",
+                "min-w-0 rounded-[1.2rem] border px-3.5 py-3 transition md:min-w-0",
                 isActive
                   ? "border-[color:var(--accent)]/24 bg-[color:var(--accent-soft)]/92 text-slate-900 shadow-sm"
                   : "border-[color:var(--line)] bg-white/58 text-[color:var(--muted)] hover:bg-white/82 hover:text-slate-900",
@@ -52,17 +52,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      <div className="hidden px-5 pb-5 md:block">
-        <div className="rounded-[1.8rem] border border-white/10 bg-[#13212d] p-5 text-slate-100 shadow-panel">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-slate-300">Tech stack</p>
-          <ul className="mt-4 space-y-2 text-sm text-slate-200">
-            <li>FastAPI + Python backend</li>
-            <li>Next.js + React frontend</li>
-            <li>Chroma vector store</li>
-          </ul>
-        </div>
-      </div>
     </aside>
   );
 }

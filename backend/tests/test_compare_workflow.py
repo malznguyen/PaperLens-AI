@@ -257,7 +257,9 @@ def test_compare_workflow_returns_partial_response_when_generation_fails() -> No
     )
 
     assert response.status == "partial"
-    assert response.summary is None
+    assert response.summary is not None
+    assert "Structured comparison generation did not complete." in response.summary
+    assert "Retinal classification setup." in response.summary
     assert len(response.comparison_table) == 2
     assert response.comparison_table[0].paper_title == "Paper 2401.12345"
     assert response.comparison_table[0].objective == MISSING_EVIDENCE_TEXT

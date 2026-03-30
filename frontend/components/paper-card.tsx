@@ -73,10 +73,10 @@ export function PaperCard({
 
       <div className="mt-4 space-y-3">
         <div className="min-w-0">
-          <h3 className="mt-2 max-w-4xl text-[1.55rem] leading-[1.12] text-slate-900 md:text-[1.8rem]">
+          <h3 className="mt-2 max-w-4xl text-pretty text-[1.38rem] leading-[1.12] text-slate-900 sm:text-[1.55rem] md:text-[1.8rem]">
             {paper.title}
           </h3>
-          <p className="mt-3 max-w-4xl text-sm leading-6 text-[color:var(--muted-strong)]">
+          <p className="mt-3 max-w-4xl text-[13px] leading-6 text-[color:var(--muted-strong)] sm:text-sm">
             {paper.authors.length > 0 ? paper.authors.join(", ") : "Authors unavailable"}
           </p>
         </div>
@@ -132,8 +132,8 @@ export function PaperCard({
           ) : null}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-          <div className="flex flex-wrap gap-2 xl:justify-end">
+        <div className="flex w-full flex-wrap items-center gap-2 xl:w-auto xl:justify-end">
+          <div className="flex w-full flex-wrap gap-2 xl:w-auto xl:justify-end">
             <IngestButton
               hasPdfUrl={Boolean(paper.pdf_url)}
               paperTitle={paper.title}
@@ -154,7 +154,7 @@ export function PaperCard({
                 href={paper.pdf_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--line)] bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white sm:w-auto"
               >
                 <FileText className="h-4 w-4" />
                 PDF
@@ -164,7 +164,7 @@ export function PaperCard({
               href={paper.source_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80 sm:w-auto"
             >
               <ExternalLink className="h-4 w-4" />
               Source

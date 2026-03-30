@@ -29,13 +29,13 @@ export function IndexButton({
   const statusLabel = getStatusLabel(status);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
       <button
         type="button"
         onClick={onIndex}
         disabled={isIndexing}
         aria-label={`Index ${paperTitle}`}
-        className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80 disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-black/10 bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
       >
         {status === "failed" ? (
           <RotateCcw className="h-4 w-4" />

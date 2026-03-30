@@ -32,13 +32,13 @@ export function IngestButton({
   const statusLabel = getStatusLabel(status);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
       <button
         type="button"
         onClick={onIngest}
         disabled={isDisabled}
         aria-label={`Ingest ${paperTitle}`}
-        className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-black/10 bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:w-auto"
       >
         {status === "failed" ? (
           <RotateCcw className="h-4 w-4" />

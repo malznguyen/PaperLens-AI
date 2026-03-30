@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     chroma_dir: Path = DEFAULT_DATA_DIR / "chroma"
 
     arxiv_base_url: str = "https://export.arxiv.org/api/query"
+    arxiv_user_agent: str = "ResearchApp/1.0 (mailto:your-email@example.com)"
     openrouter_api_key: str | None = None
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     openrouter_model: str = "openrouter/free"

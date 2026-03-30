@@ -9,6 +9,14 @@ def test_arxiv_base_url_defaults_to_https(monkeypatch) -> None:
     assert settings.arxiv_base_url == "https://export.arxiv.org/api/query"
 
 
+def test_arxiv_user_agent_accepts_plain_env_string(monkeypatch) -> None:
+    monkeypatch.setenv("ARXIV_USER_AGENT", "ResearchApp/1.0 (mailto:test@example.com)")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.arxiv_user_agent == "ResearchApp/1.0 (mailto:test@example.com)"
+
+
 def test_allowed_origins_accepts_plain_env_string(monkeypatch) -> None:
     monkeypatch.setenv("ALLOWED_ORIGINS", "http://localhost:3000")
 

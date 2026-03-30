@@ -47,7 +47,7 @@ export function ComparisonTable({ rows, citations = [] }: ComparisonTableProps) 
                   <p className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--muted)]">
                     {row.paper_id}
                   </p>
-                  <h4 className="mt-2 text-[1.35rem] leading-tight text-slate-900">
+                  <h4 className="mt-2 text-pretty text-[1.25rem] leading-tight text-slate-900 sm:text-[1.35rem]">
                     {row.paper_title}
                   </h4>
                 </div>
@@ -76,7 +76,7 @@ export function ComparisonTable({ rows, citations = [] }: ComparisonTableProps) 
                   .map((column) => (
                     <div
                       key={`${row.paper_id}-${column.key}`}
-                      className="rounded-[1.25rem] border border-[color:var(--line)] bg-[#f6f0e7] p-4"
+                      className="rounded-[1.25rem] border border-[color:var(--line)] bg-[#f6f0e7] px-4 py-3.5"
                     >
                       <dt className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--muted)]">
                         {column.label}
@@ -120,7 +120,7 @@ export function ComparisonTable({ rows, citations = [] }: ComparisonTableProps) 
                       >
                         {column.key === "paper_title" ? (
                           <div>
-                            <p className="font-medium text-slate-900">{row.paper_title}</p>
+                            <p className="font-medium text-pretty text-slate-900">{row.paper_title}</p>
                             <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-[color:var(--muted)]">
                               {row.paper_id}
                             </p>

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import logging
 
 from app.core.config import Settings, get_settings
 from app.repositories.chroma_repository import ChromaRepository, ChromaRepositoryError
@@ -55,6 +56,7 @@ class CompareWorkflow:
         self._citation_service = citation_service or CitationService()
         self._evaluation_service = evaluation_service or EvaluationService(settings=self._settings)
         self._chroma_repository = chroma_repository or ChromaRepository(settings=self._settings)
+        self._logger = logging.getLogger(__name__)
 
     async def compare_papers(self, payload: CompareRequest) -> CompareResponse:
         tracker = self._evaluation_service.start_workflow("compare")
@@ -121,7 +123,16 @@ class CompareWorkflow:
                     temperature=self._settings.compare_generation_temperature,
                     max_tokens=900,
                 )
-        except GenerationServiceError:
+        except GenerationServiceError as exc:
+            self._logger.warning(
+                "compare_generation_failed",
+                extra={
+                    "paper_ids": payload.paper_ids,
+                    "question": payload.resolved_question,
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc),
+                },
+            )
             meta = tracker.finalize(
                 status="partial",
                 retrieved_chunk_count=len(context_chunks),
@@ -129,7 +140,7 @@ class CompareWorkflow:
             )
             return CompareResponse(
                 status="partial",
-                summary=None,
+                summary=self._build_fallback_summary(payload.paper_ids, paper_titles, context_chunks),
                 comparison_table=self._build_fallback_rows(payload.paper_ids, paper_titles),
                 citations=candidate_citations,
                 retrieved_chunks=context_chunks,
@@ -313,6 +324,41 @@ class CompareWorkflow:
             sections.append("\n\n".join(section_lines))
 
         return "\n\n---\n\n".join(sections)
+
+    @staticmethod
+    def _build_fallback_summary(
+        paper_ids: list[str],
+        paper_titles: dict[str, str],
+        chunks: list[RetrievedChunk],
+    ) -> str:
+        chunks_by_paper: dict[str, list[RetrievedChunk]] = defaultdict(list)
+        for chunk in chunks:
+            chunks_by_paper[chunk.paper_id].append(chunk)
+
+        summary_parts: list[str] = []
+        for paper_id in paper_ids:
+            paper_chunks = chunks_by_paper.get(paper_id, [])
+            if not paper_chunks:
+                continue
+
+            lead_chunk = paper_chunks[0]
+            snippet = " ".join(lead_chunk.text.split())
+            if len(snippet) > 160:
+                snippet = snippet[:157].rstrip() + "..."
+            summary_parts.append(
+                f"{paper_titles.get(paper_id, paper_id)} [{lead_chunk.label}] highlights: {snippet}"
+            )
+
+        if summary_parts:
+            return (
+                "Structured comparison generation did not complete. "
+                + " ".join(summary_parts)
+            )
+
+        return (
+            "Structured comparison generation did not complete, "
+            "but the cited evidence package below remains available for manual review."
+        )
 
     @staticmethod
     def _build_fallback_rows(

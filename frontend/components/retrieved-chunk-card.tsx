@@ -15,7 +15,7 @@ export function RetrievedChunkCard({ chunk }: RetrievedChunkCardProps) {
           <p className="text-[11px] uppercase tracking-[0.22em] text-[color:var(--muted)]">
             [{chunk.label ?? chunk.chunk_id}] {chunk.paper_id}
           </p>
-          <h4 className="mt-2 max-w-4xl text-[1.3rem] leading-tight text-slate-900">
+          <h4 className="mt-2 max-w-4xl text-pretty text-[1.18rem] leading-tight text-slate-900 sm:text-[1.3rem]">
             {chunk.paper_title}
           </h4>
           <p className="mt-1 text-sm text-[color:var(--muted)]">
@@ -43,13 +43,13 @@ export function RetrievedChunkCard({ chunk }: RetrievedChunkCardProps) {
           href={chunk.source_url}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--line)] bg-white/85 px-4 py-2 text-sm text-slate-800 transition hover:border-[color:var(--accent)]/40 hover:text-[color:var(--accent)]"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[color:var(--line)] bg-white/85 px-4 py-2 text-sm text-slate-800 transition hover:border-[color:var(--accent)]/40 hover:text-[color:var(--accent)] md:w-auto"
         >
           <ArrowUpRight className="h-4 w-4" />
           Open paper source
         </a>
 
-        <div className="flex min-w-0 items-start gap-2 rounded-2xl border border-[color:var(--line)] bg-white/76 px-4 py-2.5 text-xs text-[color:var(--muted)] md:max-w-[52%]">
+        <div className="flex min-w-0 w-full items-start gap-2 rounded-2xl border border-[color:var(--line)] bg-white/76 px-4 py-2.5 text-xs text-[color:var(--muted)] md:max-w-[52%]">
           <FileText className="mt-0.5 h-4 w-4 shrink-0" />
           <span className="break-all font-mono leading-5">{chunk.pdf_path}</span>
         </div>

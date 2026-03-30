@@ -50,8 +50,10 @@ export function CitationList({ citations }: CitationListProps) {
                   {citation.paper_id}
                 </p>
               </div>
-              <p className="mt-3 text-base leading-6 text-slate-900">{citation.paper_title}</p>
-              <p className="mt-2 break-all text-sm leading-6 text-[color:var(--muted)]">
+              <p className="mt-3 text-pretty text-base leading-6 text-slate-900">
+                {citation.paper_title}
+              </p>
+              <p className="mt-2 break-all font-mono text-[12px] leading-6 text-[color:var(--muted)]">
                 Page {citation.page_number} | chunk {citation.chunk_id}
               </p>
             </div>

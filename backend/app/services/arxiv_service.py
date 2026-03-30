@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import time
 import xml.etree.ElementTree as ET
 
 import httpx
@@ -18,6 +19,7 @@ NAMESPACES = {
 }
 WHITESPACE_RE = re.compile(r"\s+")
 LOG_BODY_PREVIEW_LIMIT = 240
+ARXIV_MIN_REQUEST_INTERVAL_SECONDS = 3.0
 ARXIV_ID_RE = re.compile(
     r"(?P<identifier>(?:[a-z.\-]+/[0-9]{7}|[0-9]{4}\.[0-9]{4,5}))(?:v[0-9]+)?(?:\.pdf)?$",
     re.IGNORECASE,
@@ -33,17 +35,23 @@ class ArxivService:
     def __init__(
         self,
         base_url: str | None = None,
+        user_agent: str | None = None,
         timeout_seconds: float = 30.0,
         max_retries: int = 1,
     ) -> None:
         settings = get_settings()
         self.base_url = base_url or settings.arxiv_base_url
+        self.user_agent = user_agent or settings.arxiv_user_agent
         self.timeout = httpx.Timeout(timeout_seconds)
         self.max_retries = max_retries
         self._logger = logger
+        self._request_lock = asyncio.Lock()
+        self._last_request_started_at: float | None = None
+        self._monotonic = time.monotonic
+        self._sleep = asyncio.sleep
         self.headers = {
             "Accept": "application/atom+xml",
-            "User-Agent": "PaperLens-AI/0.1 (mailto:paperlens-ai@users.noreply.github.com)",
+            "User-Agent": self.user_agent,
         }
 
     async def search_papers(self, query: str, max_results: int) -> list[PaperSearchResult]:
@@ -64,6 +72,7 @@ class ArxivService:
         ) as client:
             for attempt in range(self.max_retries + 1):
                 try:
+                    await self._wait_for_request_slot()
                     request = client.build_request("GET", self.base_url, params=params)
                     response = await client.send(request)
                     response.raise_for_status()
@@ -89,6 +98,23 @@ class ArxivService:
                     raise ArxivServiceError("arXiv request failed.") from exc
 
         raise ArxivServiceError("arXiv request failed.")
+
+    async def _wait_for_request_slot(self) -> None:
+        async with self._request_lock:
+            now = self._monotonic()
+
+            if self._last_request_started_at is not None:
+                elapsed = now - self._last_request_started_at
+                if elapsed < ARXIV_MIN_REQUEST_INTERVAL_SECONDS:
+                    delay = ARXIV_MIN_REQUEST_INTERVAL_SECONDS - elapsed
+                    self._logger.info(
+                        "Sleeping %.2fs to respect arXiv's 1 request per 3 seconds guideline.",
+                        delay,
+                    )
+                    await self._sleep(delay)
+                    now = self._monotonic()
+
+            self._last_request_started_at = now
 
     def _parse_feed(self, feed_xml: str) -> list[PaperSearchResult]:
         try:

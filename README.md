@@ -129,6 +129,7 @@ This starts both services together.
 | `ALLOWED_ORIGINS` | `http://localhost:3000` | CORS origins |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000` | Frontend API target |
 | `ARXIV_BASE_URL` | `https://export.arxiv.org/api/query` | arXiv Atom endpoint |
+| `ARXIV_USER_AGENT` | `ResearchApp/1.0 (mailto:your-email@example.com)` | Contactable User-Agent sent with arXiv requests |
 | `OPENROUTER_API_KEY` | (required) | OpenRouter authentication |
 | `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter endpoint |
 | `OPENROUTER_MODEL` | `openrouter/free` | LLM model identifier |

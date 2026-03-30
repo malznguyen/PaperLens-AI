@@ -31,8 +31,8 @@ export function SearchBar({
         >
           Topic query
         </label>
-        <div className="mt-2 flex items-center gap-3 rounded-[1.6rem] border border-[color:var(--line)] bg-white/88 px-4 py-4 shadow-panel">
-          <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
+        <div className="mt-2 flex items-center gap-2.5 rounded-[1.6rem] border border-[color:var(--line)] bg-white/88 px-4 py-4 shadow-panel sm:gap-3">
+          <div className="shrink-0 rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-3 text-[color:var(--accent)]">
             <Search className="h-5 w-5" />
           </div>
           <input
@@ -41,7 +41,7 @@ export function SearchBar({
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="vision transformer medical image classification"
-            className="w-full border-0 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
+            className="min-w-0 w-full border-0 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
             autoComplete="off"
           />
         </div>
@@ -62,7 +62,7 @@ export function SearchBar({
             name="maxResults"
             value={maxResults}
             onChange={(event) => onMaxResultsChange(Number(event.target.value))}
-            className="rounded-2xl border border-[color:var(--line)] bg-white/84 px-4 py-3 text-sm text-slate-900 outline-none"
+            className="w-full rounded-2xl border border-[color:var(--line)] bg-white/84 px-4 py-3 text-sm text-slate-900 outline-none sm:w-auto"
           >
             {maxResultOptions.map((option) => (
               <option key={option} value={option}>
@@ -75,7 +75,7 @@ export function SearchBar({
         <button
           type="submit"
           disabled={isLoading}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#13212d] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#1b3040] disabled:cursor-not-allowed disabled:bg-slate-500"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#13212d] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#1b3040] disabled:cursor-not-allowed disabled:bg-slate-500 sm:w-auto"
         >
           {isLoading ? (
             <>

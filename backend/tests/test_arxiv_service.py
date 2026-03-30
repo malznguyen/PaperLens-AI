@@ -28,10 +28,12 @@ SAMPLE_FEED = """<?xml version="1.0" encoding="UTF-8"?>
 
 def test_arxiv_service_follows_redirects_when_arxiv_redirects(monkeypatch) -> None:
     seen_urls: list[str] = []
+    seen_user_agents: list[str] = []
     client_kwargs: dict[str, object] = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen_urls.append(str(request.url))
+        seen_user_agents.append(request.headers["user-agent"])
         if request.url.scheme == "http":
             redirected_url = str(request.url).replace("http://", "https://", 1)
             return httpx.Response(
@@ -48,7 +50,11 @@ def test_arxiv_service_follows_redirects_when_arxiv_redirects(monkeypatch) -> No
 
     monkeypatch.setattr(arxiv_service_module.httpx, "AsyncClient", RedirectingAsyncClient)
 
-    service = ArxivService(base_url="http://export.arxiv.org/api/query", max_retries=0)
+    service = ArxivService(
+        base_url="http://export.arxiv.org/api/query",
+        user_agent="ResearchApp/1.0 (mailto:test@example.com)",
+        max_retries=0,
+    )
 
     results = asyncio.run(service.search_papers("vision transformer", 1))
 
@@ -56,6 +62,10 @@ def test_arxiv_service_follows_redirects_when_arxiv_redirects(monkeypatch) -> No
     assert client_kwargs["follow_redirects"] is True
     assert seen_urls[0].startswith("http://export.arxiv.org/api/query")
     assert seen_urls[1].startswith("https://export.arxiv.org/api/query")
+    assert seen_user_agents == [
+        "ResearchApp/1.0 (mailto:test@example.com)",
+        "ResearchApp/1.0 (mailto:test@example.com)",
+    ]
 
 
 def test_arxiv_service_logs_diagnostic_context_for_http_status_errors(
@@ -85,3 +95,23 @@ def test_arxiv_service_logs_diagnostic_context_for_http_status_errors(
     assert "status=503" in caplog.text
     assert "request_url=https://export.arxiv.org/api/query" in caplog.text
     assert "redirect_location=https://export.arxiv.org/maintenance" in caplog.text
+
+
+def test_arxiv_service_waits_between_requests(monkeypatch) -> None:
+    sleep_calls: list[float] = []
+    monotonic_values = iter([0.0, 1.0, 3.0])
+
+    async def fake_sleep(delay: float) -> None:
+        sleep_calls.append(delay)
+
+    service = ArxivService(max_retries=0)
+    monkeypatch.setattr(service, "_monotonic", lambda: next(monotonic_values))
+    monkeypatch.setattr(service, "_sleep", fake_sleep)
+
+    async def run() -> None:
+        await service._wait_for_request_slot()
+        await service._wait_for_request_slot()
+
+    asyncio.run(run())
+
+    assert sleep_calls == [2.0]

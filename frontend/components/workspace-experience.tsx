@@ -243,7 +243,7 @@ export function WorkspaceExperience() {
                     type="button"
                     onClick={() => void handleCopyIndexedIds()}
                     disabled={workspace.summary.indexed_paper_count === 0}
-                    className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                   >
                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     {copied ? "Indexed IDs copied" : "Copy indexed IDs"}
@@ -282,7 +282,7 @@ export function WorkspaceExperience() {
         ) : null}
 
         {workspace && workspace.papers.length > 0 ? (
-          <div className="overflow-hidden rounded-[1.6rem] border border-[color:var(--line)] bg-white/82 shadow-panel">
+          <div className="space-y-3 2xl:overflow-hidden 2xl:rounded-[1.6rem] 2xl:border 2xl:border-[color:var(--line)] 2xl:bg-white/82 2xl:shadow-panel">
             <div className="hidden grid-cols-[minmax(0,1.8fr)_minmax(220px,0.78fr)_minmax(180px,0.7fr)_minmax(240px,0.9fr)] gap-4 border-b border-[color:var(--line)] px-5 py-4 text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)] 2xl:grid">
               <span>Paper</span>
               <span>Status</span>
@@ -290,7 +290,7 @@ export function WorkspaceExperience() {
               <span>Actions</span>
             </div>
 
-            <div className="divide-y divide-black/10">
+            <div className="space-y-3 2xl:space-y-0 2xl:divide-y 2xl:divide-black/10">
               {workspace.papers.map((paper) => (
                 <WorkspacePaperRow
                   key={paper.paper_id}
@@ -346,7 +346,7 @@ function QuickActionLink({
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white"
+      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--line)] bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white sm:w-auto"
     >
       {icon}
       {children}
@@ -373,7 +373,7 @@ function WorkspacePaperRow({
         : "text-[color:var(--muted)]";
 
   return (
-    <article className="grid gap-5 px-5 py-5 2xl:grid-cols-[minmax(0,1.8fr)_minmax(220px,0.78fr)_minmax(180px,0.7fr)_minmax(240px,0.9fr)] 2xl:items-start">
+    <article className="grid gap-5 rounded-[1.6rem] border border-[color:var(--line)] bg-white/88 px-4 py-4 shadow-panel sm:px-5 sm:py-5 2xl:rounded-none 2xl:border-0 2xl:bg-transparent 2xl:px-5 2xl:py-5 2xl:shadow-none 2xl:grid-cols-[minmax(0,1.8fr)_minmax(220px,0.78fr)_minmax(180px,0.7fr)_minmax(240px,0.9fr)] 2xl:items-start">
       <div className="min-w-0 space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full border border-[color:var(--line)] bg-[#f6f0e7] px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-slate-700">
@@ -384,7 +384,9 @@ function WorkspacePaperRow({
           </span>
         </div>
 
-        <h3 className="text-[1.6rem] leading-[1.14] text-slate-900">{paper.title}</h3>
+        <h3 className="text-pretty text-[1.35rem] leading-[1.14] text-slate-900 sm:text-[1.5rem] 2xl:text-[1.6rem]">
+          {paper.title}
+        </h3>
         <p className="max-w-4xl text-sm leading-6 text-[color:var(--muted-strong)]">
           {paper.authors.length > 0 ? paper.authors.join(", ") : "Authors unavailable"}
         </p>
@@ -406,7 +408,7 @@ function WorkspacePaperRow({
         </div>
       </div>
 
-      <div className="space-y-3 rounded-[1.35rem] border border-[color:var(--line)] bg-[#fbf7f1] p-4 2xl:rounded-none 2xl:border-0 2xl:bg-transparent 2xl:p-0">
+      <div className="space-y-3 rounded-[1.35rem] border border-[color:var(--line)] bg-[#fbf7f1]/92 p-4 2xl:rounded-none 2xl:border-0 2xl:bg-transparent 2xl:p-0">
         <p className="text-[11px] uppercase tracking-[0.22em] text-[color:var(--muted)] 2xl:hidden">
           Status
         </p>
@@ -418,14 +420,14 @@ function WorkspacePaperRow({
             {paper.status.indexed ? "Indexed" : "Not indexed"}
           </StatusChip>
         </div>
-        <p className="text-sm leading-6 text-[color:var(--muted)]">
+        <p className="break-all font-mono text-[12px] leading-6 text-[color:var(--muted)]">
           {paper.collection_name
             ? `Collection: ${paper.collection_name}`
             : "No index collection recorded yet."}
         </p>
       </div>
 
-      <div className="space-y-3 rounded-[1.35rem] border border-[color:var(--line)] bg-[#fbf7f1] p-4 2xl:rounded-none 2xl:border-0 2xl:bg-transparent 2xl:p-0">
+      <div className="space-y-3 rounded-[1.35rem] border border-[color:var(--line)] bg-[#fbf7f1]/92 p-4 2xl:rounded-none 2xl:border-0 2xl:bg-transparent 2xl:p-0">
         <p className="text-[11px] uppercase tracking-[0.22em] text-[color:var(--muted)] 2xl:hidden">
           Corpus metrics
         </p>
@@ -436,7 +438,7 @@ function WorkspacePaperRow({
         </div>
       </div>
 
-      <div className="space-y-3 rounded-[1.35rem] border border-[color:var(--line)] bg-[#fbf7f1] p-4 2xl:rounded-none 2xl:border-0 2xl:bg-transparent 2xl:p-0">
+      <div className="space-y-3 rounded-[1.35rem] border border-[color:var(--line)] bg-[#fbf7f1]/92 p-4 2xl:rounded-none 2xl:border-0 2xl:bg-transparent 2xl:p-0">
         <p className="text-[11px] uppercase tracking-[0.22em] text-[color:var(--muted)] 2xl:hidden">
           Actions
         </p>
@@ -446,7 +448,7 @@ function WorkspacePaperRow({
               type="button"
               onClick={() => onIndex(paper)}
               disabled={isIndexing}
-              className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80 disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--accent-soft)] px-4 py-2 text-sm font-medium text-[color:var(--accent)] transition hover:bg-[color:var(--accent-soft)]/80 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
             >
               {isIndexing ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -462,7 +464,7 @@ function WorkspacePaperRow({
               href={paper.source_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--line)] bg-white/90 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-white sm:w-auto"
             >
               <ExternalLink className="h-4 w-4" />
               Source
